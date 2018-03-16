@@ -13,7 +13,7 @@ echo $end_date
 cd /data/NCAR/GENS
 
 
-set file_label = (GUST  ISOHGT MSLP T2M SPCH2M U10 V10 UFLX VFLX FRICV APCP )
+set VARIABLE_LIST = (GUST ISOHGT MSLP T2M SPCH2M U10 V10 UFLX VFLX FRICV APCP )
 
 set LOCATION_LIST =  (WRFRAP ARMCAR NAMIBI  UCONUS)
 
@@ -31,7 +31,7 @@ foreach LOCATION ( $LOCATION_LIST )
    echo "ØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØ"
    echo
 
-   foreach VARIABLE  ( $file_label )
+   foreach VARIABLE  ( $VARIABLE_LIST )
 
          echo "====================================================="
          echo
@@ -43,7 +43,7 @@ foreach LOCATION ( $LOCATION_LIST )
          echo
 
          # command-line syntax should read (for example for a fast test case):
-         #  ncl 'file_label="T2M"' 'scenario="WRFRAP"' 'start_date_string="2016-01-01"' 'end_date_string="2016-01-10"'  script_T2M_read_ensembles_from_thredds.ncl
+         #  ncl 'FILE_LABEL="T2M"' 'scenario="WRFRAP"' 'start_date_string="2016-01-01"' 'end_date_string="2016-01-10"'  script_T2M_read_ensembles_from_thredds.ncl
 
          echo ncl file_label='"'${VARIABLE}'"' \
                   scenario='"'${LOCATION}'"' \
@@ -69,11 +69,11 @@ foreach LOCATION ( $LOCATION_LIST )
          echo
 
 
-         if ( ${VARIABLE} == "ISOHGT" )  &&  ( ${LOCATION} == "WRFRAP" ) then
+         if ( ${VARIABLE} == "ISOHGT"   &&  ${LOCATION} == "WRFRAP" ) then
 
 
             # command-line syntax should read (for example for a fast test case):
-            #  ncl 'file_label="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-14"' 'end_date_string="2017-03-16"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
+            #  ncl 'FILE_LABEL="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-14"' 'end_date_string="2017-03-16"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
 
             echo ncl file_label='"'${VARIABLE}'"' \
                      scenario='"'${LOCATION}'"' \
@@ -100,7 +100,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
 
          endif
-         
+
    end
 
 
