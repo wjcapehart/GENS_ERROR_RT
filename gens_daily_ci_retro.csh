@@ -2,10 +2,16 @@
 
 ulimit -f unlimited
 
-set HH = 06
+set FILE_LABEL = ( ISOHGT MSLP T2M SPCH2M U10 V10 UFLX VFLX FRICV GUST APCP )
 
-set start_date=`date --utc -d "2 day ago" '+%Y-%m-%d'`
-set end_date=`date --utc -d "0 day ago" '+%Y-%m-%d'`
+set LOCATION_LIST =  (WRFRAP ARMCAR NAMIBI  UCONUS)
+
+
+
+set start_date="2017-03-14"
+set end_date="2017-03-16"
+
+set HH = 00
 
 echo $start_date
 echo $end_date
@@ -13,14 +19,7 @@ echo $end_date
 cd /data/NCAR/GENS
 
 
-set file_label = ( ISOHGT MSLP T2M SPCH2M U10 V10 UFLX VFLX FRICV GUST APCP )
 
-set LOCATION_LIST =  (WRFRAP ARMCAR NAMIBI  UCONUS)
-
-
-/usr/local/bin/idl   << endidl
-.run /data/NCAR/GENS/gens_daily_ncep_${HH}.pro
-endidl
 
 cd /projects/BIG_WEATHER/GENS_ERROR_RT
 
@@ -30,7 +29,7 @@ foreach LOCATION ( $LOCATION_LIST )
    echo "ØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØ"
    echo
 
-   foreach VARIABLE  ( $file_label )
+   foreach VARIABLE  ( $FILE_LABEL )
 
          echo "====================================================="
          echo
@@ -42,7 +41,7 @@ foreach LOCATION ( $LOCATION_LIST )
          echo
 
          # command-line syntax should read (for example for a fast test case):
-         #  ncl 'file_label="T2M"' 'scenario="WRFRAP"' 'start_date_string="2016-01-01"' 'end_date_string="2016-01-10"'  script_T2M_read_ensembles_from_thredds.ncl
+         #  ncl 'FILE_LABEL="T2M"' 'scenario="WRFRAP"' 'start_date_string="2016-01-01"' 'end_date_string="2016-01-10"'  script_T2M_read_ensembles_from_thredds.ncl
 
          echo ncl file_label='"'${VARIABLE}'"' \
                   scenario='"'${LOCATION}'"' \
@@ -68,12 +67,11 @@ foreach LOCATION ( $LOCATION_LIST )
          echo
 
 
-
          if ( ${VARIABLE} == "ISOHGT" )  &&  ( ${LOCATION} == "WRFRAP" ) then
 
 
             # command-line syntax should read (for example for a fast test case):
-            #  ncl 'file_label="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-14"' 'end_date_string="2017-03-16"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
+            #  ncl 'FILE_LABEL="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-14"' 'end_date_string="2017-03-16"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
 
             echo ncl file_label='"'${VARIABLE}'"' \
                      scenario='"'${LOCATION}'"' \
@@ -100,7 +98,6 @@ foreach LOCATION ( $LOCATION_LIST )
 
 
          endif
-
    end
 
 

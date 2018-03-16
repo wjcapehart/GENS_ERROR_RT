@@ -448,6 +448,8 @@ begin
 
          if ( isfilevar(f,"Total_precipitation_surface_6_Hour_Accumulation_ens") ) then
             inarr =  f->Total_precipitation_surface_6_Hour_Accumulation_ens
+            replace_ieeenan(inarr, inarr@_FillValue, 0)
+
             inarr!0 = "thredds_fx"
             inarr!1 = "thredds_ens"
             thredds_fx  = inarr&thredds_fx

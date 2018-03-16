@@ -67,41 +67,37 @@ foreach LOCATION ( $LOCATION_LIST )
          echo
 
 
-                  if [ ${VARIABLE} == "ISOHGT"  ]  && [ ${LOCATION} == "WRFRAP"  ]
-                  then
+         if ( ${VARIABLE} == "ISOHGT" )  &&  ( ${LOCATION} == "WRFRAP" ) then
 
 
-                            # command-line syntax should read (for example for a fast test case):
-               #  ncl 'file_label="T2M"' 'scenario="WRFRAP"' 'start_date_string="2016-01-01"' 'end_date_string="2016-01-10"'  script_T2M_read_ensembles_from_thredds.ncl
+            # command-line syntax should read (for example for a fast test case):
+            #  ncl 'file_label="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-14"' 'end_date_string="2017-03-16"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
 
-               echo ncl file_label='"'${VARIABLE}'"' \
-                        scenario='"'${LOCATION}'"' \
-                        start_date_string='"'$start_date'"'   \
-                        end_date_string='"'$end_date'"'       \
-                        working_hour='"'$HH'"'       \
-                        script_plot_triangle_product_ISOHGT.ncl
+            echo ncl file_label='"'${VARIABLE}'"' \
+                     scenario='"'${LOCATION}'"' \
+                     start_date_string='"'$start_date'"'   \
+                     end_date_string='"'$end_date'"'       \
+                     working_hour='"'$HH'"'       \
+                     script_plot_triangle_product_ISOHGT.ncl
 
-               echo
-               echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
-               echo
-
-
-               ncl file_label='"'$VARIABLE'"' \
-                   scenario='"'$LOCATION'"' \
-                   start_date_string='"'$start_date'"'   \
-                   end_date_string='"'$end_date'"'       \
-                   working_hour='"'$HH'"'       \
-                   script_plot_triangle_product_ISOHGT.ncl
-
-               echo
-               echo "-----------------------------------------------------"
-               echo
+            echo
+            echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+            echo
 
 
-         fi
+            ncl file_label='"'$VARIABLE'"' \
+                scenario='"'$LOCATION'"' \
+                start_date_string='"'$start_date'"'   \
+                end_date_string='"'$end_date'"'       \
+                working_hour='"'$HH'"'       \
+                script_plot_triangle_product_ISOHGT.ncl
+
+            echo
+            echo "-----------------------------------------------------"
+            echo
 
 
-
+         endif
    end
 
 

@@ -444,6 +444,8 @@ begin
 
          if ( isfilevar(f,"u-component_of_wind_height_above_ground_ens") ) then
             inarr =  f->$"u-component_of_wind_height_above_ground_ens"$
+            replace_ieeenan(inarr, inarr@_FillValue, 0)
+
             inarr!0 = "thredds_fx"
             inarr!1 = "thredds_ens"
             thredds_fx  = inarr&thredds_fx
@@ -602,6 +604,7 @@ begin
             temp_analysis0 := eastward_wind_speed_at_10m_agl_field(index_validation_time,   0, 0, :, :, :)
 
             rmse0  := dim_rmsd_n_Wrap(temp_model0, temp_analysis0, (/ 1,2 /) )
+            replace_ieeenan(rmse0, rmse0@_FillValue, 0)
 
             eastward_wind_speed_at_10m_agl_ens000_rmse(t,ifx,:) = (/ rmse0 /)
 
@@ -611,6 +614,7 @@ begin
             temp_analysisA := eastward_wind_speed_at_10m_agl_field(time | index_validation_time, fx |   0, elevation_of_anemometer_height | :, ens | :, lat | :, lon | :)
 
             rmseA := dim_rmsd_n_Wrap(temp_modelA, temp_analysisA, (/ 1,2,3 /) )
+            replace_ieeenan(rmseA, rmseA@_FillValue, 0)
 
             eastward_wind_speed_at_10m_agl_ensALL_rmse(t,ifx,:) = (/ rmseA /)
 
@@ -620,6 +624,7 @@ begin
             temp_analysisM := dim_avg_n_Wrap(eastward_wind_speed_at_10m_agl_field(index_validation_time,   0, :, :, :, :), 0)
 
             rmseM := dim_rmsd_n_Wrap(temp_modelM, temp_analysisM, (/ 1,2 /) )
+            replace_ieeenan(rmseM, rmseM@_FillValue, 0)
 
             eastward_wind_speed_at_10m_agl_ensAVG_rmse(t,ifx,:) = (/ rmseM /)
 
@@ -631,6 +636,7 @@ begin
                                       (/ 1,2,3  /) )
 
             rmseM := dim_rmsd_n_Wrap(temp_modelX, temp_analysisX, 0 )
+            replace_ieeenan(rmseM, rmseM@_FillValue, 0)
 
             eastward_wind_speed_at_10m_agl_xy_rmse(t,ifx,:,:,:) = (/ rmseM /)
 

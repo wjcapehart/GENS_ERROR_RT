@@ -445,6 +445,8 @@ begin
 
          if ( isfilevar(f,"Momentum_flux_u-component_surface_6_Hour_Average_ens") ) then
             inarr =  f->$"Momentum_flux_u-component_surface_6_Hour_Average_ens"$
+            replace_ieeenan(inarr, inarr@_FillValue, 0)
+
             inarr!0 = "thredds_fx"
             inarr!1 = "thredds_ens"
             thredds_fx  = inarr&thredds_fx
