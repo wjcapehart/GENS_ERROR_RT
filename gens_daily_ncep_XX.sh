@@ -90,7 +90,7 @@ cd /projects/BIG_WEATHER/GENS_ERROR_RT
          echo
 
 
-         if [ ${VARIABLE} == "ISOHGT"  ] && [${LOCATION} == "WRFRAP" ]
+         if [ ${VARIABLE} == ISOHGT  ] && [ ${LOCATION} == WRFRAP ]
          then
 
             # command-line syntax should read (for example for a fast test case):
