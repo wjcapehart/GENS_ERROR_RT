@@ -92,7 +92,8 @@ do
             echo
 
 
-            if [ ${VARIABLE} == "ISOHGT"  ] &&  [${LOCATION} == "WRFRAP" ] then
+            if [ ${VARIABLE} == "ISOHGT"  ] &&  [${LOCATION} == "WRFRAP" ]
+            then
 
 
                # command-line syntax should read (for example for a fast test case):
