@@ -2,11 +2,12 @@
 
 # start and end dates for the long run
 LONG_GAME_START_DATE=2018-03-01
-LONG_GAME_END_DATE=2018-03-17
+LONG_GAME_END_DATE=2018-03-16
 
 # converting these into time in system seconds
-CURRENTDATE_TS=$(date -j -f "%Y-%m-%d" ${LONG_GAME_START_DATE} "+%s")
-ENDDATE_TS=$(date -j -f "%Y-%m-%d" ${LONG_GAME_END_DATE} "+%s")
+CURRENTDATE_TS=`date --date ${LONG_GAME_START_DATE} '+%s'`
+ENDDATE_TS=`date --date ${LONG_GAME_END_DATE} '+%s'`
+
 
 # Offset for Daily Time Step
 OFFSET_DAILY_TS=86400
@@ -38,8 +39,9 @@ while [ "${CURRENTDATE_TS}" -le "${ENDDATE_TS}" ]
 do
 
    # producing the CI brackets for this period
-   END_DATE=$(date -j -f "%s" ${CURRENTDATE_TS} "+%Y-%m-%d")
-   START_DATE=$(date -j -f "%s" $((${CURRENTDATE_TS}+${OFFSET_CI_TS}))  "+%Y-%m-%d")
+   END_DATE=`date --date=@${CURRENTDATE_TS} "+%Y-%m-%d"`
+   CURRENT_STARTDATE_TS=$((${CURRENTDATE_TS}+${OFFSET_CI_TS}))
+   START_DATE=`date --date=@$((${CURRENTDATE_TS}+${OFFSET_CI_TS})) "+%Y-%m-%d"`
 
 
    for WORKING_HOUR in 00 06 12 18
