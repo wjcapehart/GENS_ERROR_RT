@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # start and end dates for the long run
-LONG_GAME_START_DATE=2018-03-01
-LONG_GAME_END_DATE=2018-03-01
+LONG_GAME_START_DATE=2016-06-01
+LONG_GAME_END_DATE=2018-03-17
 
 # converting these into time in system seconds
 CURRENTDATE_TS=`date --date ${LONG_GAME_START_DATE} '+%s'`
