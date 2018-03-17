@@ -27,6 +27,12 @@ begin
    print(" Site = " + scenario)
    print("  Var = " + file_label)
 
+   archive_directory  = "/projects/BIG_WEATHER/wjc/GENS_Processing/arch/"
+   error_directory    = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_data/"
+   graphics_directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/ci_graphics/"
+   archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
+   pdf_directory      = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_pdfs/"
+
 
    ;start_date_string = "2015-12-25"  ; start date
    ;end_date_string   = "2017-10-10"  ; end date
@@ -670,7 +676,7 @@ begin
 
    print("------------  Writing Output File  ------------")
 
-   output_file = "./GENS_03_ENSEMBLE__"+file_label+"__ERROR__" + \
+   output_file = error_directory+ "GENS_03_ENSEMBLE__"+file_label+"__ERROR__" + \
                  scenario + "__" + \
                  start_date_string + "_" + working_hour + "_to_" + \
                  end_date_string + "_" + working_hour + ".nc"

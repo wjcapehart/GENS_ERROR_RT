@@ -30,10 +30,9 @@ begin
       desired_max_fx_time@units = "hours"
 
    archive_directory  = "/projects/BIG_WEATHER/wjc/GENS_Processing/arch/"
-   realtime_directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/"
-
-   ;archive_directory  = "./"
-   ;realtime_directory = "./"
+   error_directory    = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_data/"
+   graphics_directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/ci_graphics/"
+   archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
 
 
    ;
@@ -62,7 +61,7 @@ begin
    ; Create Input File File with all available verified forecasts
    ;
 
-   all_data_file = realtime_directory + "gens_03_ensemble__ISOHGT__error__" + scenario + "__2015-08-01_to_2017-10-31.nc"
+   all_data_file = archive_directory + "gens_03_ensemble__ISOHGT__error__" + scenario + "__2015-08-01_to_2017-10-31.nc"
 
    ; pretend file for now that has the last 10 VERIFIED forecasts
    recent_data_file = all_data_file
@@ -91,7 +90,7 @@ begin
    ;;;  REALTIME FORECAST ERROR AND VARIANCE verified
 
 
-   recent_data_file = realtime_directory+"GENS_03_ENSEMBLE__ISOHGT__ERROR__" + scenario + "__" + start_date_string +"_"+ working_hour + "_to_" + end_date_string +"_"+ working_hour + ".nc"
+   recent_data_file = error_directory+"GENS_03_ENSEMBLE__ISOHGT__ERROR__" + scenario + "__" + start_date_string +"_"+ working_hour + "_to_" + end_date_string +"_"+ working_hour + ".nc"
 
 
    print(recent_data_file)
@@ -189,7 +188,7 @@ begin
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-   plot_file = "./GENS_03_TRIANGLE__500mb__" + \
+   plot_file = graphics_directory+"./GENS_03_TRIANGLE__500mb__" + \
                  scenario + "__"                   + \
                  start_date_string +"_"+working_hour+ "__to__"        + \
                  end_date_string +"_"+working_hour
@@ -610,5 +609,9 @@ gsn_panel(wks,plot,(/2,2/),panel_res)
 print(n_plot)
 
 delete(wks)
+
+system ("scp " + plot_file + ".000001.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_triangle_by_FxTime.png")
+system ("scp " + plot_file + ".000002.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_triangle_by_RealTime.png")
+
 
 end

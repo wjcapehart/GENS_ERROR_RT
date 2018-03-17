@@ -27,6 +27,11 @@ begin
    print(" Site = " + scenario)
    print("  Var = " + file_label)
 
+   archive_directory  = "/projects/BIG_WEATHER/wjc/GENS_Processing/arch/"
+   error_directory    = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_data/"
+   graphics_directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/ci_graphics/"
+   archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
+   pdf_directory      = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_pdfs/"
 
    ;start_date_string = "2015-12-25"  ; start date
    ;end_date_string   = "2017-10-10"  ; end date
