@@ -4,10 +4,10 @@ ulimit -f unlimited
 
 set HH = 06
 
-set start_date=`date --utc -d "2 day ago" '+%Y-%m-%d'`
+set START_DATE=`date --utc -d "2 day ago" '+%Y-%m-%d'`
 set end_date=`date --utc -d "0 day ago" '+%Y-%m-%d'`
 
-echo $start_date
+echo ${START_DATE}
 echo $end_date
 
 cd /data/NCAR/GENS
@@ -46,7 +46,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
          echo ncl file_label='"'${VARIABLE}'"' \
                   scenario='"'${LOCATION}'"' \
-                  start_date_string='"'$start_date'"'   \
+                  start_date_string='"'${START_DATE}'"'   \
                   end_date_string='"'$end_date'"'       \
                   working_hour='"'$HH'"'       \
                   script_${VARIABLE}_read_ensembles_from_thredds.ncl
@@ -58,7 +58,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
          ncl file_label='"'$VARIABLE'"' \
              scenario='"'$LOCATION'"' \
-             start_date_string='"'$start_date'"'   \
+             start_date_string='"'${START_DATE}'"'   \
              end_date_string='"'$end_date'"'       \
              working_hour='"'$HH'"'       \
              script_${VARIABLE}_read_ensembles_from_thredds.ncl
@@ -77,7 +77,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
             echo ncl file_label='"'${VARIABLE}'"' \
                      scenario='"'${LOCATION}'"' \
-                     start_date_string='"'$start_date'"'   \
+                     start_date_string='"'${START_DATE}'"'   \
                      end_date_string='"'$end_date'"'       \
                      working_hour='"'$HH'"'       \
                      script_plot_triangle_product_ISOHGT.ncl
@@ -89,7 +89,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
             ncl file_label='"'$VARIABLE'"' \
                 scenario='"'$LOCATION'"' \
-                start_date_string='"'$start_date'"'   \
+                start_date_string='"'${START_DATE}'"'   \
                 end_date_string='"'$end_date'"'       \
                 working_hour='"'$HH'"'       \
                 script_plot_triangle_product_ISOHGT.ncl

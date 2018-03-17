@@ -8,13 +8,13 @@ set LOCATION_LIST =  (WRFRAP ARMCAR NAMIBI  UCONUS)
 
 
 
-set start_date="2017-03-14"
-set end_date="2017-03-16"
 
-set HH = 00
+set START_DATE="2017-03-14"
+set END_DATE="2017-03-16"
 
-echo $start_date
-echo $end_date
+
+echo ${START_DATE}
+echo ${END_DATE}
 
 cd /data/NCAR/GENS
 
@@ -23,7 +23,7 @@ cd /data/NCAR/GENS
 
 cd /projects/BIG_WEATHER/GENS_ERROR_RT
 
-foreach HH = ( 06 18 )
+foreach HH ( 12 06 )
 
    foreach LOCATION ( $LOCATION_LIST )
       echo "====================================================="
@@ -35,7 +35,7 @@ foreach HH = ( 06 18 )
             echo "====================================================="
             echo
 
-            echo $LOCATION $VARIABLE  ${start_date}_${HH}
+            echo $LOCATION $VARIABLE  ${START_DATE}_${HH}
 
             echo
             echo "-----------------------------------------------------"
@@ -46,8 +46,8 @@ foreach HH = ( 06 18 )
 
             echo ncl file_label='"'${VARIABLE}'"' \
                      scenario='"'${LOCATION}'"' \
-                     start_date_string='"'$start_date'"'   \
-                     end_date_string='"'$end_date'"'       \
+                     start_date_string='"'${START_DATE}'"'   \
+                     end_date_string='"'${END_DATE}'"'       \
                      working_hour='"'$HH'"'       \
                      script_${VARIABLE}_read_ensembles_from_thredds.ncl
 
@@ -58,8 +58,8 @@ foreach HH = ( 06 18 )
 
             ncl file_label='"'$VARIABLE'"' \
                 scenario='"'$LOCATION'"' \
-                start_date_string='"'$start_date'"'   \
-                end_date_string='"'$end_date'"'       \
+                start_date_string='"'${START_DATE}'"'   \
+                end_date_string='"'${END_DATE}'"'       \
                 working_hour='"'$HH'"'       \
                 script_${VARIABLE}_read_ensembles_from_thredds.ncl
 
@@ -76,8 +76,8 @@ foreach HH = ( 06 18 )
 
                echo ncl file_label='"'${VARIABLE}'"' \
                         scenario='"'${LOCATION}'"' \
-                        start_date_string='"'$start_date'"'   \
-                        end_date_string='"'$end_date'"'       \
+                        start_date_string='"'${START_DATE}'"'   \
+                        end_date_string='"'${END_DATE}'"'       \
                         working_hour='"'$HH'"'       \
                         script_plot_triangle_product_ISOHGT.ncl
 
@@ -88,8 +88,8 @@ foreach HH = ( 06 18 )
 
                ncl file_label='"'$VARIABLE'"' \
                    scenario='"'$LOCATION'"' \
-                   start_date_string='"'$start_date'"'   \
-                   end_date_string='"'$end_date'"'       \
+                   start_date_string='"'${START_DATE}'"'   \
+                   end_date_string='"'${END_DATE}'"'       \
                    working_hour='"'$HH'"'       \
                    script_plot_triangle_product_ISOHGT.ncl
 
