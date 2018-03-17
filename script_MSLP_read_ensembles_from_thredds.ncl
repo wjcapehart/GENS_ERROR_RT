@@ -659,7 +659,7 @@ begin
 
    print("------------  Writing Output File  ------------")
 
-   output_file = "./GENS_03_ENSEMBLE__"+file_label+"__ERROR__" + \
+   output_file = error_directory+ "GENS_03_ENSEMBLE__"+file_label+"__ERROR__" + \
                  scenario + "__" + \
                  start_date_string + "_" + working_hour + "_to_" + \
                  end_date_string + "_" + working_hour + ".nc"
