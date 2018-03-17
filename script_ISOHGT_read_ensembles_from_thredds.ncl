@@ -663,7 +663,7 @@ begin
 
    print("------------  Creating Diagnostic Plots  ------------")
 
-      plot_file = error_directory+ "GENS_03_ENSEMBLE__"+file_label+"__ERROR__" + \
+      plot_file = pdf_directory+ "GENS_03_ENSEMBLE__"+file_label+"__ERROR__" + \
                     scenario + "__"                   + \
                     start_date_string + "_" + working_hour + "_to_" + \
                     end_date_string + "_" + working_hour
