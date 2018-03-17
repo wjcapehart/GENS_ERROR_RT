@@ -92,7 +92,7 @@ do
             echo
 
 
-            if [ ${VARIABLE} == "ISOHGT"  ] &&  [${LOCATION} == "WRFRAP" ]
+            if [ ${VARIABLE} == ISOHGT  ] &&  [${LOCATION} == WRFRAP ]
             then
 
 
