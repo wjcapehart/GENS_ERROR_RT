@@ -22,9 +22,10 @@ begin
    ;;;;;;;Time Control;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
 
-   print("Start = "+start_date_string)
-   print("  End = "+end_date_string)
-   print(" Site = "+scenario)
+   print("Start = " + start_date_string + " " + working_hour + " UTC")
+   print("  End = " + end_date_string   + " " + working_hour + " UTC")
+   print(" Site = " + scenario)
+   print("  Var = " + file_label)
 
 
    ;start_date_string = "2015-12-25"  ; start date
