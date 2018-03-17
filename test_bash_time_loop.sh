@@ -2,7 +2,7 @@
 
 # start and end dates for the long run
 LONG_GAME_START_DATE=2018-03-01
-LONG_GAME_END_DATE=2018-03-16
+LONG_GAME_END_DATE=2018-03-01
 
 # converting these into time in system seconds
 CURRENTDATE_TS=`date --date ${LONG_GAME_START_DATE} '+%s'`
@@ -97,14 +97,14 @@ do
 
 
                # command-line syntax should read (for example for a fast test case):
-               #  ncl 'FILE_LABEL="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-14"' 'end_date_string="2017-03-16"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
+               #  ncl 'file_label="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-15"' 'end_date_string="2017-03-17"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
 
                echo ncl file_label='"'${VARIABLE}'"' \
                         scenario='"'${LOCATION}'"' \
                         start_date_string='"'${START_DATE}'"'   \
                         end_date_string='"'${END_DATE}'"'       \
                         working_hour='"'${WORKING_HOUR}'"'       \
-                        script_plot_triangle_product_ISOHGT.ncl
+                        script_plot_triangle_product_ISOHGT_retro.ncl
 
                echo
                echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"

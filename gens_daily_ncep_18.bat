@@ -68,6 +68,7 @@ foreach LOCATION ( $LOCATION_LIST )
          echo "-----------------------------------------------------"
          echo
 
+
          if ( ${VARIABLE} == "ISOHGT"   &&  ${LOCATION} == "WRFRAP" ) then
 
 
@@ -99,6 +100,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
 
          endif
+
    end
 
 
