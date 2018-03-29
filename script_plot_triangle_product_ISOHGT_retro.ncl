@@ -610,8 +610,6 @@ print(n_plot)
 
 delete(wks)
 
-system ("scp " + plot_file + ".000001.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_triangle_by_FxTime.png")
-system ("scp " + plot_file + ".000002.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_triangle_by_RealTime.png")
 
 
 end
