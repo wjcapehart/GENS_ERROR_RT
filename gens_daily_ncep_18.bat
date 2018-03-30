@@ -2,21 +2,19 @@
 
 ulimit -f unlimited
 
-set HH = 18
-
-set START_DATE=`date --utc -d "2 day ago" '+%Y-%m-%d'`
-set end_date=`date --utc -d "0 day ago" '+%Y-%m-%d'`
-
-echo ${START_DATE}
-echo ${END_DATE}
-
-cd /data/NCAR/GENS
-
-
-set VARIABLE_LIST = (GUST ISOHGT MSLP T2M SPCH2M U10 V10 UFLX VFLX FRICV APCP )
+set VARIABLE_LIST = ( ISOHGT MSLP T2M SPCH2M U10 V10 UFLX VFLX FRICV GUST APCP )
 
 set LOCATION_LIST =  (WRFRAP ARMCAR NAMIBI  UCONUS)
 
+set HH = 18
+
+set START_DATE=`date --utc -d "2 day ago" '+%Y-%m-%d'`
+set END_DATE=`date   --utc -d "0 day ago" '+%Y-%m-%d'`
+
+echo $START_DATE
+echo ${END_DATE}
+
+cd /data/NCAR/GENS
 
 
 /usr/local/bin/idl   << endidl
@@ -47,7 +45,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
          echo ncl file_label='"'${VARIABLE}'"' \
                   scenario='"'${LOCATION}'"' \
-                  start_date_string='"'${START_DATE}'"'   \
+                  start_date_string='"'$START_DATE'"'   \
                   end_date_string='"'${END_DATE}'"'       \
                   working_hour='"'$HH'"'       \
                   script_${VARIABLE}_read_ensembles_from_thredds.ncl
@@ -59,7 +57,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
          ncl file_label='"'$VARIABLE'"' \
              scenario='"'$LOCATION'"' \
-             start_date_string='"'${START_DATE}'"'   \
+             start_date_string='"'$START_DATE'"'   \
              end_date_string='"'${END_DATE}'"'       \
              working_hour='"'$HH'"'       \
              script_${VARIABLE}_read_ensembles_from_thredds.ncl
@@ -100,7 +98,6 @@ foreach LOCATION ( $LOCATION_LIST )
 
 
          endif
-
    end
 
 

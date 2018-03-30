@@ -9,7 +9,7 @@ set LOCATION_LIST =  (WRFRAP ARMCAR NAMIBI  UCONUS)
 set HH = 00
 
 set START_DATE=`date --utc -d "2 day ago" '+%Y-%m-%d'`
-set END_DATE=`date --utc -d "0 day ago" '+%Y-%m-%d'`
+set END_DATE=`date   --utc -d "0 day ago" '+%Y-%m-%d'`
 
 echo $START_DATE
 echo ${END_DATE}
