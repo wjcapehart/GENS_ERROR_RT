@@ -22,6 +22,12 @@ begin
    ;;;;;;;Time Control;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
 
+      ;start_date_string = "2016-01-01"  ; start date
+      ;end_date_string   = "2016-01-31"  ; end date
+      ;scenario          = "WRFRAP"
+      ;working_hour      = "00"
+      ;file_label        = "MSLP"
+
    print("Start = " + start_date_string + " " + working_hour + " UTC")
    print("  End = " + end_date_string   + " " + working_hour + " UTC")
    print(" Site = " + scenario)
@@ -33,9 +39,7 @@ begin
    archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
    pdf_directory      = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_pdfs/"
 
-   ;start_date_string = "2015-12-25"  ; start date
-   ;end_date_string   = "2017-10-10"  ; end date
-   ;scenario = "WRFRAP"
+
    time_intervals       = 6          ; hours between fx products
    time_intervals@units = "hours"
 
@@ -98,7 +102,28 @@ begin
    ;
    ; root director for THREDDS directories
    ;
+
+   URL = "/data/NCAR/GENS/grib2data/"
+   latitude_name  = "lat_0"
+   longitude_name = "lon_0"
+   time_name      = "forecast_time0"
+   isobaricz_name  = "lv_ISBL0"
+   isobarich_name  = "lv_ISBL1"
+   isobaricw_name  = "lv_ISBL2"
+   ensemble_name  = "ensemble0"
+   variable_name  = "TMP_P1_L103_GLL0"
+   mslp_name      = "PRMSL_P1_L101_GLL0"
+
    URL = "http://kyrill.ias.sdsmt.edu:8080/thredds/dodsC/BWW_GENS/"
+   latitude_name   = "lat"
+   longitude_name  = "lon"
+   time_name       = "time"
+   isobaricz_name  = "isobaric"
+   isobarich_name  = "isobaric1"
+   isobaricw_name  = "isobaric2"
+   ensemble_name   = "ens"
+   variable_name   = "Pressure_reduced_to_MSL_msl_ens"
+   mslp_name       = "Pressure_reduced_to_MSL_msl_ens"
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -125,6 +150,7 @@ begin
 
    start_time_arch = toint(cd_convert(start_time, time_units))
    end_time_arch   = toint(cd_convert(end_time,   time_units))
+
 
    ;
    ; Time Coordinate Created
@@ -165,7 +191,7 @@ begin
    f = addfile(metadata_URL, "r")
 
 
-   lon = f->lon
+   lon = f->$longitude_name$
    lon!0 =  "lon"
    lon&lon = lon
    lon@description   = "Longitude"
@@ -178,7 +204,7 @@ begin
 
 
 
-   lat = f->lat
+   lat = f->$latitude_name$
    lat!0 = "lat"
    lat&lat = lat
    lat@description   = "Latitude"
@@ -191,14 +217,14 @@ begin
 
 
       ;location_string = avg(lon)
-         location_string!0 =  "ncl_scalar"
+         location_string!0             =  "ncl_scalar"
          location_string@description   = "Station Location Label"
          location_string@long_name     = "Station Location Label"
 
 
 
       lon_center = avg(lon)
-         lon_center!0 =  "ncl_scalar"
+         lon_center!0             =  "ncl_scalar"
          lon_center@description   = "Longitude Center of Domain"
          lon_center@long_name     = "Longitude Center of Domain"
          lon_center@standard_name = "longitude"
@@ -221,9 +247,10 @@ begin
 
 
 
-   ens = f->ens
 
-   fx  = f->time
+   ens = f->$ensemble_name$
+
+   fx  = f->$time_name$
       fx!0     = "fx"
       fx@units = "hours"
       fx@long_name = "Forecast Time"
@@ -231,7 +258,7 @@ begin
       delete(fx@calendar)
 
 
-   isobaric_height = f->isobaric({isobaric_height_pull})
+   isobaric_height = f->$isobaricz_name$({isobaric_height_pull})
    isobaric_height!0 = "isobaric_height"
    isobaric_height&isobaric_height = isobaric_height
    isobaric_height@axis = "Z"
@@ -239,7 +266,6 @@ begin
    isobaric_height@long_name = "Isobaric surface"
    isobaric_height@description = "Isobaric surface"
    isobaric_height@positive = "down"
-
 
 
    elevation_of_mean_sea_level = (/ 0. /)
@@ -365,7 +391,7 @@ begin
       mean_sea_level_pressure_field&elevation_of_mean_sea_level = elevation_of_mean_sea_level
       mean_sea_level_pressure_field&lat      = lat
       mean_sea_level_pressure_field&lon      = lon
-      copy_VarAtts(f->Pressure_reduced_to_MSL_msl_ens, mean_sea_level_pressure_field)
+      copy_VarAtts(f->$mslp_name$, mean_sea_level_pressure_field)
       delete(mean_sea_level_pressure_field@coordinates)
       mean_sea_level_pressure_field@_FillValue    = default_fillvalue(typeof(mean_sea_level_pressure_field))
       mean_sea_level_pressure_field@missing_value = mean_sea_level_pressure_field@_FillValue
@@ -373,6 +399,12 @@ begin
       mean_sea_level_pressure_field@long_name     = mean_sea_level_pressure_field@description
       mean_sea_level_pressure_field@standard_name = "air_pressure_at_sea_level"
       mean_sea_level_pressure_field(:, :, :, :, :, :) = mean_sea_level_pressure_field@_FillValue
+
+
+
+
+   ;
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
    ;;;; Time for the Reading Loop ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -424,30 +456,29 @@ begin
          ; Pull native file iso
          ;
 
-         z_isobaric  = f->isobaric
-         rh_isobaric = f->isobaric1
-         w_isobaric =  f->isobaric2
+         z_isobaric  = f->$isobaricz_name$
+         rh_isobaric = f->$isobarich_name$
+         w_isobaric =  f->$isobaricw_name$
 
          ;
          ; Extract the fields
          ;
 
-         ;  single layer fields
 
-         if ( isfilevar(f,"Pressure_reduced_to_MSL_msl_ens") ) then
-            inarr =  f->Pressure_reduced_to_MSL_msl_ens
+         if ( isfilevar(f,variable_name) ) then
+            inarr =  f->$variable_name$
             replace_ieeenan(inarr, inarr@_FillValue, 0)
 
             inarr!0 = "thredds_fx"
             inarr!1 = "thredds_ens"
             thredds_fx  = inarr&thredds_fx
             thredds_ens = inarr&thredds_ens
-            mean_sea_level_pressure_field(        t, {thredds_fx}, {thredds_ens}, 0, :, :) = (/ inarr({thredds_fx},{thredds_ens},:,:) /)
+            mean_sea_level_pressure_field( t, {thredds_fx}, {thredds_ens}, 0, :, :) = (/ inarr({thredds_fx},{thredds_ens},:,:) /)
             if (dimsizes(thredds_fx).ne.dimsizes(fx)) then
-               print("      !!!!  Error in "+fx_time+" Fx size for Pressure_reduced_to_MSL_msl_ens")
+               print("      !!!!  Error in "+fx_time+" Fx size for " + variable_name)
             end if
             if (dimsizes(thredds_ens).ne.dimsizes(ens)) then
-               print("      !!!!  Error in "+fx_time+" Ens size for Pressure_reduced_to_MSL_msl_ens")
+               print("      !!!!  Error in "+fx_time+" Ens size for " + variable_name)
             end if
             delete(thredds_fx)
             delete(thredds_ens)
@@ -456,7 +487,8 @@ begin
          delete(z_isobaric)
          delete(rh_isobaric)
          delete(w_isobaric)
-         end if
+      end if
+
 
    end do
 
@@ -478,20 +510,53 @@ begin
 
    mean_sea_level_pressure_xy_stdev = dim_stddev_n_Wrap(mean_sea_level_pressure_field, 2)
    mean_sea_level_pressure_xy_stdev@cell_method   = "ens:standard_deviation"
-   mean_sea_level_pressure_xy_stdev@long_name     = "Surface Pressure Reduced to Mean Sea Level StDev by Lat-Lon"
+   mean_sea_level_pressure_xy_stdev@long_name     = "Mean Sea Level Pressure StDev by Lat-Lon"
    mean_sea_level_pressure_xy_stdev@description   = mean_sea_level_pressure_xy_stdev@long_name
+
+
+
+   ; Average stdevs across latitudes and longitudes
+   ;  input indexes            : [time] x [fx] x [isobaric] x [lat] x [lon]
+   ;  remaining output indexes : [time] x [fx] x [isobaric]
 
    print("------------  Calculating Spatially-Averaged Standard Deviation Fields  ------------")
 
 
-   mean_sea_level_pressure_stdev = dim_avg_n_Wrap(mean_sea_level_pressure_xy_stdev, (/ 3, 4 /))
-   mean_sea_level_pressure_stdev@long_name     = "Surface Pressure Reduced to Mean Sea Level StDev"
-   mean_sea_level_pressure_stdev@description   = "Surface Pressure Reduced to Mean Sea Level StDev"
-   mean_sea_level_pressure_stdev@standard_name = "air_pressure_at_sea_level"
-   mean_sea_level_pressure_stdev@cell_method   = "ens:standard_deviation lon:mean lat:mean"
+      mean_sea_level_pressure_stdev = dim_avg_n_Wrap(mean_sea_level_pressure_xy_stdev, (/ 3, 4 /))
+      mean_sea_level_pressure_stdev@long_name     = "Mean Sea Level Pressure StDev"
+      mean_sea_level_pressure_stdev@description   = "Mean Sea Level Pressure StDev"
+      mean_sea_level_pressure_stdev@standard_name = "air_pressure_at_sea_level"
+      mean_sea_level_pressure_stdev@cell_method   = "ens:standard_deviation lon:mean lat:mean"
+
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+   ;;;; Generate Std and Means in X-Y directions ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;
+   ; This takes advangate of the dim_stddev_n_Wrap & dim_avg_n_Wrap
+   ;   function calculates stdev over a range of indexes, in this case
+   ;   the ensembles
+   ;
+   ;  input indicies:    [time] x [fx] x [ens] x [isobaric] x [lat] x [lon]
+   ;
+   ;  remaining output indexes : [time] x [fx] x [ens] x [isobaric]
+
+   print("------------  Calculating Mean and Stdev by Ensemble Layer   ------------")
+
+      mean_sea_level_pressure_stdev_by_ens               = dim_stddev_n_Wrap(mean_sea_level_pressure_field, (/ 4, 5 /))
+      mean_sea_level_pressure_stdev_by_ens@cell_method   = "lon: lat: standard_deviation"
+      mean_sea_level_pressure_stdev_by_ens@long_name     = "Mean Sea Level Pressure StDev by Member"
+      mean_sea_level_pressure_stdev_by_ens@description   = mean_sea_level_pressure_stdev_by_ens@long_name
+
+      mean_sea_level_pressure_avg_by_ens               = dim_avg_n_Wrap(mean_sea_level_pressure_field, (/ 4, 5 /))
+      mean_sea_level_pressure_avg_by_ens@cell_method   = "lon: lat: mean"
+      mean_sea_level_pressure_avg_by_ens@long_name     = "Mean Sea Level Pressure Mean by Member"
+      mean_sea_level_pressure_avg_by_ens@description   = mean_sea_level_pressure_avg_by_ens@long_name
+
+      ;
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
    ;;;; Generate Spatial RMSE Metrics ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
@@ -501,9 +566,8 @@ begin
 
    print("------------  Creating Spatially-Distributed RMSE Fields  ------------")
 
-
    mean_sea_level_pressure_xy_rmse = mean_sea_level_pressure_xy_stdev
-   mean_sea_level_pressure_xy_rmse@long_name     = "Surface Pressure Reduced to Mean Sea Level RMSE by Lat-Lon"
+   mean_sea_level_pressure_xy_rmse@long_name     = "Mean Sea Level Pressure RMSE by Lat-Lon"
    mean_sea_level_pressure_xy_rmse@description   = mean_sea_level_pressure_xy_rmse@long_name
    mean_sea_level_pressure_xy_rmse@cell_method   = "ens:rmse"
    mean_sea_level_pressure_xy_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens" ;"
@@ -525,8 +589,10 @@ begin
 
    print("------------  Creating Spatially-Averaged RMSE Fields  ------------")
 
+
+
    mean_sea_level_pressure_ens000_rmse               = mean_sea_level_pressure_stdev
-   mean_sea_level_pressure_ens000_rmse@long_name     = "Surface Pressure Reduced to Mean Sea Level RMSE (control member)"
+   mean_sea_level_pressure_ens000_rmse@long_name     = "Mean Sea Level Pressure RMSE (control member)"
    mean_sea_level_pressure_ens000_rmse@description   = mean_sea_level_pressure_ens000_rmse@description
    mean_sea_level_pressure_ens000_rmse@ensemble      = "Ensemble Member #00"
    mean_sea_level_pressure_ens000_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens|0, lat,lon"
@@ -534,10 +600,10 @@ begin
    mean_sea_level_pressure_ens000_rmse(:,:,:)        = mean_sea_level_pressure_ens000_rmse@_FillValue
 
    mean_sea_level_pressure_ensALL_rmse               = mean_sea_level_pressure_ens000_rmse
-   mean_sea_level_pressure_ensALL_rmse@long_name     = "Surface Pressure Reduced to Mean Sea Level RMSE (all members)"
+   mean_sea_level_pressure_ensALL_rmse@long_name     = "Mean Sea Level Pressure RMSE (all members)"
    mean_sea_level_pressure_ensALL_rmse@description   = mean_sea_level_pressure_ensALL_rmse@long_name
-   mean_sea_level_pressure_ensALL_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
    mean_sea_level_pressure_ensALL_rmse@ensemble      = "All 21 Ensemble Members"
+   mean_sea_level_pressure_ensALL_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
    mean_sea_level_pressure_ensALL_rmse@cell_method   = "ens: lon: lat: rmse"
    mean_sea_level_pressure_ensALL_rmse(:,:,:)        = mean_sea_level_pressure_ensALL_rmse@_FillValue
 
@@ -545,12 +611,32 @@ begin
    mean_sea_level_pressure_ensAVG_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
    mean_sea_level_pressure_ensAVG_rmse@avg_op_ncl    = "dim_avg_n over dimension(s): ens"
    mean_sea_level_pressure_ensAVG_rmse@ensemble      = "All 21 Ensemble Members"
-   mean_sea_level_pressure_ensAVG_rmse@long_name     = "Surface Pressure Reduced to Mean Sea Level RMSE (ensemble mean)"
-   mean_sea_level_pressure_ensAVG_rmse@description   = "Surface Pressure Reduced to Mean Sea Level RMSE (ensemble mean)"
+   mean_sea_level_pressure_ensAVG_rmse@long_name     = "Mean Sea Level Pressure RMSE (ensemble mean)"
+   mean_sea_level_pressure_ensAVG_rmse@description   = mean_sea_level_pressure_ensAVG_rmse@long_name
    mean_sea_level_pressure_ensAVG_rmse@cell_method   = "ens:mean  lon: lat: rmse"
    mean_sea_level_pressure_ensAVG_rmse(:,:,:)        = mean_sea_level_pressure_ensAVG_rmse@_FillValue
    mean_sea_level_pressure_ensAVG_rmse@kolczynski_equivalent = "avg(AVars(s),xy)"
    mean_sea_level_pressure_xy_stdev@kolczynski_equivalent = "EVars(sij)"
+
+   mean_sea_level_pressure_corr_by_ens               = mean_sea_level_pressure_stdev_by_ens
+   mean_sea_level_pressure_corr_by_ens@long_name     = "Mean Sea Level Pressure Corr by Member"
+   mean_sea_level_pressure_corr_by_ens@description   = mean_sea_level_pressure_corr_by_ens@description
+   mean_sea_level_pressure_corr_by_ens@cell_method   = "lon: lat: corr"
+   mean_sea_level_pressure_corr_by_ens(:,:,:,:)        = mean_sea_level_pressure_corr_by_ens@_FillValue
+
+   mean_sea_level_pressure_bias_by_ens               = mean_sea_level_pressure_stdev_by_ens
+   mean_sea_level_pressure_bias_by_ens@long_name     = "Mean Sea Level Pressure Bias by Member"
+   mean_sea_level_pressure_bias_by_ens@description   = mean_sea_level_pressure_bias_by_ens@description
+   mean_sea_level_pressure_bias_by_ens@cell_method   = "lon: lat: bias"
+   mean_sea_level_pressure_bias_by_ens(:,:,:,:)        = mean_sea_level_pressure_bias_by_ens@_FillValue
+
+
+   mean_sea_level_pressure_rmse_by_ens               = mean_sea_level_pressure_stdev_by_ens
+   mean_sea_level_pressure_rmse_by_ens@long_name     = "Mean Sea Level Pressure RMSE by Member"
+   mean_sea_level_pressure_rmse_by_ens@description   = mean_sea_level_pressure_rmse_by_ens@description
+   mean_sea_level_pressure_rmse_by_ens@cell_method   = "lon: lat: rmse"
+   mean_sea_level_pressure_rmse_by_ens(:,:,:,:)        = mean_sea_level_pressure_rmse_by_ens@_FillValue
+
 
    ; there has to be a beautifully elegant way to get this fast but I don't
    ;   haven't thought of it yet
@@ -581,7 +667,6 @@ begin
 
          if (.not.ismissing(index_validation_time)) then
 
-
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
             temp_model0    := mean_sea_level_pressure_field(                    t, ifx, 0, :, :, :)
@@ -591,16 +676,6 @@ begin
             replace_ieeenan(rmse0, rmse0@_FillValue, 0)
 
             mean_sea_level_pressure_ens000_rmse(t,ifx,:) = (/ rmse0 /)
-
-            ;...................................................................
-
-            temp_modelM    := dim_avg_n_Wrap(mean_sea_level_pressure_field(                    t, ifx, :, :, :, :), 0)
-            temp_analysisM := dim_avg_n_Wrap(mean_sea_level_pressure_field(index_validation_time,   0, :, :, :, :), 0)
-
-            rmseM := dim_rmsd_n_Wrap(temp_modelM, temp_analysisM, (/ 1,2 /) )
-            replace_ieeenan(rmseM, rmseM@_FillValue, 0)
-
-            mean_sea_level_pressure_ensAVG_rmse(t,ifx,:) = (/ rmseM /)
 
             ;...................................................................
 
@@ -614,6 +689,16 @@ begin
 
             ;...................................................................
 
+            temp_modelM    := dim_avg_n_Wrap(mean_sea_level_pressure_field(                    t, ifx, :, :, :, :), 0)
+            temp_analysisM := dim_avg_n_Wrap(mean_sea_level_pressure_field(index_validation_time,   0, :, :, :, :), 0)
+
+            rmseM := dim_rmsd_n_Wrap(temp_modelM, temp_analysisM, (/ 1,2 /) )
+            replace_ieeenan(rmseM, rmseM@_FillValue, 0)
+
+            mean_sea_level_pressure_ensAVG_rmse(t,ifx,:) = (/ rmseM /)
+
+            ;...................................................................
+
             temp_modelX    := mean_sea_level_pressure_field(                    t, ifx, :, :, :, :)
             temp_analysisX := conform_dims(dimsizes(temp_modelX(                                            :,  :, :, :)),    \
                                       dim_avg_n_Wrap(mean_sea_level_pressure_field(index_validation_time,   0, :,  :, :, :), 0), \
@@ -624,7 +709,30 @@ begin
 
             mean_sea_level_pressure_xy_rmse(t,ifx,:,:,:) = (/ rmseM /)
 
+            ;...................................................................
 
+            temp_modelE    := mean_sea_level_pressure_field(                    t, ifx, :, :, :, :)
+            temp_analysisE := mean_sea_level_pressure_field(index_validation_time,   0, :, :, :, :)
+
+            biasE := dim_avg_n_Wrap((/ (temp_modelE - temp_analysisE)  /), (/ 2, 3 /) )
+            replace_ieeenan(biasE, biasE@_FillValue, 0)
+
+            mean_sea_level_pressure_bias_by_ens(t,ifx,:,:) = (/ biasE /)
+
+            rmseE := dim_rmsd_n_Wrap(temp_modelE, temp_analysisE, (/ 2, 3 /) )
+            replace_ieeenan(rmseE, rmseE@_FillValue, 0)
+
+            mean_sea_level_pressure_rmse_by_ens(t,ifx,:,:) = (/ rmseE /)
+
+            do ee = 0, nens-1
+               do zz = 0, nz-1
+                  temp_modelEn    := temp_modelE(   ee,zz,:,:)
+                  temp_analysisEn := temp_analysisE(ee,zz,:,:)
+                  corrE := escorc(ndtooned(temp_modelEn),ndtooned(temp_analysisEn))
+                  replace_ieeenan(corrE, corrE@_FillValue, 0)
+                  mean_sea_level_pressure_corr_by_ens(t,ifx,ee,zz) = (/ corrE /)
+               end do
+            end do
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -634,9 +742,9 @@ begin
                   sprinti("F%0.2i",   toint(fx(ifx))) + " " +  \
                   forecast_valid_time_string(t,ifx) + " " + \
                   forecast_valid_time_string(index_validation_time,0) + " " + \
-                  mean_sea_level_pressure_ens000_rmse(t,ifx,:) + " " + \
-                  mean_sea_level_pressure_ensALL_rmse(t,ifx,:) + " " + \
-                  mean_sea_level_pressure_ensAVG_rmse(t,ifx,:) )
+                  mean_sea_level_pressure_ens000_rmse( t,ifx,0) + " " + \
+                  mean_sea_level_pressure_bias_by_ens(t,ifx,0,0) + " " + \
+                  mean_sea_level_pressure_corr_by_ens(t,ifx,0,0) )
 
          end if
 
@@ -647,6 +755,7 @@ begin
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 
@@ -706,8 +815,8 @@ begin
       fout@start_date = start_date_string
       fout@end_date   = end_date_string
 
-      fout->time                        = time
-      fout->time                        = time
+      fout->$time_name$                        = time
+      fout->$time_name$                        = time
 
    delete(fout)
 
@@ -724,25 +833,32 @@ begin
 
    fout = addfile(output_file, "w")
 
-      fout->location_label                 = location_string
-      fout->lon_center                     = lon_center
-      fout->lat_center                     = lat_center
-      fout->fx                             = fx
-      fout->isobaric_height                = isobaric_height
-      fout->elevation_of_mean_sea_level    = elevation_of_mean_sea_level
-      fout->elevation_of_screen_height     = elevation_of_screen_height
-      fout->elevation_of_anemometer_height = elevation_of_anemometer_height
-      fout->elevation_at_ground_surface    = elevation_at_ground_surface
+      fout->location_label                     = location_string
+      fout->lon_center                         = lon_center
+      fout->lat_center                         = lat_center
+      fout->fx                                 = fx
+      fout->isobaric_height                    = isobaric_height
+      fout->ens                                = ens
+      fout->elevation_of_mean_sea_level        = elevation_of_mean_sea_level
+      fout->elevation_of_screen_height         = elevation_of_screen_height
+      fout->elevation_of_anemometer_height     = elevation_of_anemometer_height
+      fout->elevation_at_ground_surface        = elevation_at_ground_surface
 
-      fout->forecast_valid_time         = forecast_valid_time
+      fout->forecast_valid_time                = forecast_valid_time
 
-      fout->mean_sea_level_pressure_xy_stdev    = mean_sea_level_pressure_xy_stdev
-      fout->mean_sea_level_pressure_xy_rmse     = mean_sea_level_pressure_xy_rmse
-      fout->mean_sea_level_pressure_stdev       = mean_sea_level_pressure_stdev
-      fout->mean_sea_level_pressure_ens000_rmse = mean_sea_level_pressure_ens000_rmse
-      fout->mean_sea_level_pressure_ensALL_rmse = mean_sea_level_pressure_ensALL_rmse
-      fout->mean_sea_level_pressure_ensAVG_rmse = mean_sea_level_pressure_ensAVG_rmse
+      fout->mean_sea_level_pressure_xy_stdev     = mean_sea_level_pressure_xy_stdev
+      fout->mean_sea_level_pressure_xy_rmse      = mean_sea_level_pressure_xy_rmse
+      fout->mean_sea_level_pressure_stdev        = mean_sea_level_pressure_stdev
+      fout->mean_sea_level_pressure_ens000_rmse  = mean_sea_level_pressure_ens000_rmse
+      fout->mean_sea_level_pressure_ensALL_rmse  = mean_sea_level_pressure_ensALL_rmse
+      fout->mean_sea_level_pressure_ensAVG_rmse  = mean_sea_level_pressure_ensAVG_rmse
 
+      fout->mean_sea_level_pressure_corr_by_ens  = mean_sea_level_pressure_corr_by_ens
+      fout->mean_sea_level_pressure_bias_by_ens  = mean_sea_level_pressure_bias_by_ens
+      fout->mean_sea_level_pressure_rmse_by_ens  = mean_sea_level_pressure_rmse_by_ens
+
+      fout->mean_sea_level_pressure_avg_by_ens   = mean_sea_level_pressure_avg_by_ens
+      fout->mean_sea_level_pressure_stdev_by_ens = mean_sea_level_pressure_stdev_by_ens
 
    delete(fout)
 

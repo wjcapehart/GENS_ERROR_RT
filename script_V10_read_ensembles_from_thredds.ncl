@@ -22,11 +22,11 @@ begin
    ;;;;;;;Time Control;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
 
-      start_date_string = "2016-01-01"  ; start date
-      end_date_string   = "2016-01-10"  ; end date
-      scenario          = "WRFRAP"
-      working_hour      = "00"
-      file_label        = "V10"
+   ;   start_date_string = "2016-01-01"  ; start date
+   ;   end_date_string   = "2016-01-10"  ; end date
+   ;   scenario          = "WRFRAP"
+   ;   working_hour      = "00"
+   ;   file_label        = "V10"
 
    print("Start = " + start_date_string + " " + working_hour + " UTC")
    print("  End = " + end_date_string   + " " + working_hour + " UTC")
@@ -39,7 +39,7 @@ begin
    archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
    pdf_directory      = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_pdfs/"
 
-   error_directory    = "./"
+   ; error_directory    = "./"
 
 
    time_intervals       = 6          ; hours between fx products
