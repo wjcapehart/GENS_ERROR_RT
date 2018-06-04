@@ -17,16 +17,16 @@
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-begin
+begin 
 
    ;;;;;;;Time Control;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
 
-      ;start_date_string = "2016-01-01"  ; start date
-      ;end_date_string   = "2016-01-10"  ; end date
-      ;scenario          = "WRFRAP"
-      ;working_hour      = "00"
-      ;file_label        = "T2M"
+      start_date_string = "2016-01-01"  ; start date
+      end_date_string   = "2016-01-10"  ; end date
+      scenario          = "WRFRAP"
+      working_hour      = "00"
+      file_label        = "M10"
 
    print("Start = " + start_date_string + " " + working_hour + " UTC")
    print("  End = " + end_date_string   + " " + working_hour + " UTC")
@@ -38,6 +38,8 @@ begin
    graphics_directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/ci_graphics/"
    archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
    pdf_directory      = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_pdfs/"
+
+   error_directory    = "./"
 
 
    time_intervals       = 6          ; hours between fx products
@@ -122,7 +124,7 @@ begin
    isobarich_name  = "isobaric1"
    isobaricw_name  = "isobaric2"
    ensemble_name   = "ens"
-   variable_name   = "Temperature_height_above_ground_ens"
+   variable_name   = "wind_height_above_ground_ens"
    mslp_name       = "Pressure_reduced_to_MSL_msl_ens"
 
    ;
@@ -401,17 +403,17 @@ begin
       mean_sea_level_pressure_field(:, :, :, :, :, :) = mean_sea_level_pressure_field@_FillValue
 
 
-   temperature_at_2m_agl_field =  mean_sea_level_pressure_field
-      copy_VarAtts(f->$variable_name$, temperature_at_2m_agl_field)
-      temperature_at_2m_agl_field!3        = "elevation_of_screen_height"
-      temperature_at_2m_agl_field&elevation_of_screen_height = elevation_of_screen_height
-      temperature_at_2m_agl_field@description   = "2-m Air Temperature (all members)"
-      temperature_at_2m_agl_field@long_name     = "2-m Air Temperature (all members)"
-      temperature_at_2m_agl_field@standard_name = "air_temperature"
-      temperature_at_2m_agl_field@units         = "K"
-      delete(temperature_at_2m_agl_field@coordinates)
-      temperature_at_2m_agl_field@_FillValue    = default_fillvalue(typeof(temperature_at_2m_agl_field))
-      temperature_at_2m_agl_field@missing_value = temperature_at_2m_agl_field@_FillValue
+   wind_speed_at_10m_agl_field =  mean_sea_level_pressure_field
+      copy_VarAtts(f->Wind_speed_gust_surface_ens, wind_speed_at_10m_agl_field)
+      wind_speed_at_10m_agl_field!3        = "elevation_of_anemometer_height"
+      wind_speed_at_10m_agl_field&elevation_of_anemometer_height = elevation_of_anemometer_height
+      wind_speed_at_10m_agl_field@description   = "10-m Wind Speed (all members)"
+      wind_speed_at_10m_agl_field@long_name     = "10-m Wind Speed (all members)"
+      wind_speed_at_10m_agl_field@standard_name = "wind_speed"
+      wind_speed_at_10m_agl_field@units         = "m s-1"
+      delete(wind_speed_at_10m_agl_field@coordinates)
+      wind_speed_at_10m_agl_field@_FillValue    = default_fillvalue(typeof(wind_speed_at_10m_agl_field))
+      wind_speed_at_10m_agl_field@missing_value = wind_speed_at_10m_agl_field@_FillValue
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -475,20 +477,29 @@ begin
          ;
 
 
-         if ( isfilevar(f,variable_name) ) then
-            inarr =  f->$variable_name$
-            replace_ieeenan(inarr, inarr@_FillValue, 0)
+         if ( isfilevar(f,"u-component_of_wind_height_above_ground_ens") .and. \
+              isfilevar(f,"v-component_of_wind_height_above_ground_ens") ) then
+
+            inarr_u =  f->$"u-component_of_wind_height_above_ground_ens"$
+            replace_ieeenan(inarr_u, inarr_u@_FillValue, 0)
+
+            inarr_v =  f->$"v-component_of_wind_height_above_ground_ens"$
+            replace_ieeenan(inarr_v, inarr_v@_FillValue, 0)
+
+            inarr = inarr_u
+            inarr(:,:,:,:,:) = sqrt( inarr_u^2 + inarr_v^2 )
+
 
             inarr!0 = "thredds_fx"
             inarr!1 = "thredds_ens"
             thredds_fx  = inarr&thredds_fx
             thredds_ens = inarr&thredds_ens
-            temperature_at_2m_agl_field( t, {thredds_fx}, {thredds_ens}, 0, :, :) = (/ inarr({thredds_fx},{thredds_ens},0,:,:) /)
+            wind_speed_at_10m_agl_field( t, {thredds_fx}, {thredds_ens}, 0, :, :) = (/ inarr({thredds_fx},{thredds_ens},0,:,:) /)
             if (dimsizes(thredds_fx).ne.dimsizes(fx)) then
-               print("      !!!!  Error in "+fx_time+" Fx size for " + variable_name)
+               print("      !!!!  Error in "+fx_time+" Fx size for " + "speed_of_wind_height_above_ground_ens")
             end if
             if (dimsizes(thredds_ens).ne.dimsizes(ens)) then
-               print("      !!!!  Error in "+fx_time+" Ens size for " + variable_name)
+               print("      !!!!  Error in "+fx_time+" Ens size for " + "speed_of_wind_height_above_ground_ens")
             end if
             delete(thredds_fx)
             delete(thredds_ens)
@@ -518,10 +529,10 @@ begin
 
    print("------------  Calculating Spatially-Distributed Standard Deviation Fields  ------------")
 
-   temperature_at_2m_agl_xy_stdev = dim_stddev_n_Wrap(temperature_at_2m_agl_field, 2)
-   temperature_at_2m_agl_xy_stdev@cell_method   = "ens:standard_deviation"
-   temperature_at_2m_agl_xy_stdev@long_name     = "2-m Air Temperature StDev by Lat-Lon"
-   temperature_at_2m_agl_xy_stdev@description   = temperature_at_2m_agl_xy_stdev@long_name
+   wind_speed_at_10m_agl_xy_stdev = dim_stddev_n_Wrap(wind_speed_at_10m_agl_field, 2)
+   wind_speed_at_10m_agl_xy_stdev@cell_method   = "ens:standard_deviation"
+   wind_speed_at_10m_agl_xy_stdev@long_name     = "10-m Wind Speed StDev by Lat-Lon"
+   wind_speed_at_10m_agl_xy_stdev@description   = wind_speed_at_10m_agl_xy_stdev@long_name
 
 
 
@@ -532,11 +543,11 @@ begin
    print("------------  Calculating Spatially-Averaged Standard Deviation Fields  ------------")
 
 
-      temperature_at_2m_agl_stdev = dim_avg_n_Wrap(temperature_at_2m_agl_xy_stdev, (/ 3, 4 /))
-      temperature_at_2m_agl_stdev@long_name     = "2-m Air Temperature StDev"
-      temperature_at_2m_agl_stdev@description   = "2-m Air Temperature StDev"
-      temperature_at_2m_agl_stdev@standard_name = "air_temperature"
-      temperature_at_2m_agl_stdev@cell_method   = "ens:standard_deviation lon:mean lat:mean"
+      wind_speed_at_10m_agl_stdev = dim_avg_n_Wrap(wind_speed_at_10m_agl_xy_stdev, (/ 3, 4 /))
+      wind_speed_at_10m_agl_stdev@long_name     = "10-m Wind Speed StDev"
+      wind_speed_at_10m_agl_stdev@description   = "10-m Wind Speed StDev"
+      wind_speed_at_10m_agl_stdev@standard_name = "wind_speed"
+      wind_speed_at_10m_agl_stdev@cell_method   = "ens:standard_deviation lon:mean lat:mean"
 
 
    ;
@@ -554,15 +565,15 @@ begin
 
    print("------------  Calculating Mean and Stdev by Ensemble Layer   ------------")
 
-      temperature_at_2m_agl_stdev_by_ens               = dim_stddev_n_Wrap(temperature_at_2m_agl_field, (/ 4, 5 /))
-      temperature_at_2m_agl_stdev_by_ens@cell_method   = "lon: lat: standard_deviation"
-      temperature_at_2m_agl_stdev_by_ens@long_name     = "2-m Air Temperature StDev by Member"
-      temperature_at_2m_agl_stdev_by_ens@description   = temperature_at_2m_agl_stdev_by_ens@long_name
+      wind_speed_at_10m_agl_stdev_by_ens               = dim_stddev_n_Wrap(wind_speed_at_10m_agl_field, (/ 4, 5 /))
+      wind_speed_at_10m_agl_stdev_by_ens@cell_method   = "lon: lat: standard_deviation"
+      wind_speed_at_10m_agl_stdev_by_ens@long_name     = "10-m Wind Speed StDev by Member"
+      wind_speed_at_10m_agl_stdev_by_ens@description   = wind_speed_at_10m_agl_stdev_by_ens@long_name
 
-      temperature_at_2m_agl_avg_by_ens               = dim_avg_n_Wrap(temperature_at_2m_agl_field, (/ 4, 5 /))
-      temperature_at_2m_agl_avg_by_ens@cell_method   = "lon: lat: mean"
-      temperature_at_2m_agl_avg_by_ens@long_name     = "2-m Air Temperature Mean by Member"
-      temperature_at_2m_agl_avg_by_ens@description   = temperature_at_2m_agl_avg_by_ens@long_name
+      wind_speed_at_10m_agl_avg_by_ens               = dim_avg_n_Wrap(wind_speed_at_10m_agl_field, (/ 4, 5 /))
+      wind_speed_at_10m_agl_avg_by_ens@cell_method   = "lon: lat: mean"
+      wind_speed_at_10m_agl_avg_by_ens@long_name     = "10-m Wind Speed Mean by Member"
+      wind_speed_at_10m_agl_avg_by_ens@description   = wind_speed_at_10m_agl_avg_by_ens@long_name
 
       ;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -576,14 +587,14 @@ begin
 
    print("------------  Creating Spatially-Distributed RMSE Fields  ------------")
 
-   temperature_at_2m_agl_xy_rmse = temperature_at_2m_agl_xy_stdev
-   temperature_at_2m_agl_xy_rmse@long_name     = "2-m Air Temperature RMSE by Lat-Lon"
-   temperature_at_2m_agl_xy_rmse@description   = temperature_at_2m_agl_xy_rmse@long_name
-   temperature_at_2m_agl_xy_rmse@cell_method   = "ens:rmse"
-   temperature_at_2m_agl_xy_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens" ;"
-   temperature_at_2m_agl_xy_rmse(:,:,:,:,:)      = temperature_at_2m_agl_xy_rmse@_FillValue
-   delete(temperature_at_2m_agl_xy_rmse@stddev_op_ncl)
-   temperature_at_2m_agl_xy_rmse@kolczynski_equivalent = "sqrt[AVars(sij)]"
+   wind_speed_at_10m_agl_xy_rmse = wind_speed_at_10m_agl_xy_stdev
+   wind_speed_at_10m_agl_xy_rmse@long_name     = "10-m Wind Speed RMSE by Lat-Lon"
+   wind_speed_at_10m_agl_xy_rmse@description   = wind_speed_at_10m_agl_xy_rmse@long_name
+   wind_speed_at_10m_agl_xy_rmse@cell_method   = "ens:rmse"
+   wind_speed_at_10m_agl_xy_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens" ;"
+   wind_speed_at_10m_agl_xy_rmse(:,:,:,:,:)      = wind_speed_at_10m_agl_xy_rmse@_FillValue
+   delete(wind_speed_at_10m_agl_xy_rmse@stddev_op_ncl)
+   wind_speed_at_10m_agl_xy_rmse@kolczynski_equivalent = "sqrt[AVars(sij)]"
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -601,51 +612,51 @@ begin
 
 
 
-   temperature_at_2m_agl_ens000_rmse               = temperature_at_2m_agl_stdev
-   temperature_at_2m_agl_ens000_rmse@long_name     = "2-m Air Temperature RMSE (control member)"
-   temperature_at_2m_agl_ens000_rmse@description   = temperature_at_2m_agl_ens000_rmse@description
-   temperature_at_2m_agl_ens000_rmse@ensemble      = "Ensemble Member #00"
-   temperature_at_2m_agl_ens000_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens|0, lat,lon"
-   temperature_at_2m_agl_ens000_rmse@cell_method   = "lon: lat: rmse"
-   temperature_at_2m_agl_ens000_rmse(:,:,:)        = temperature_at_2m_agl_ens000_rmse@_FillValue
+   wind_speed_at_10m_agl_ens000_rmse               = wind_speed_at_10m_agl_stdev
+   wind_speed_at_10m_agl_ens000_rmse@long_name     = "10-m Wind Speed RMSE (control member)"
+   wind_speed_at_10m_agl_ens000_rmse@description   = wind_speed_at_10m_agl_ens000_rmse@description
+   wind_speed_at_10m_agl_ens000_rmse@ensemble      = "Ensemble Member #00"
+   wind_speed_at_10m_agl_ens000_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens|0, lat,lon"
+   wind_speed_at_10m_agl_ens000_rmse@cell_method   = "lon: lat: rmse"
+   wind_speed_at_10m_agl_ens000_rmse(:,:,:)        = wind_speed_at_10m_agl_ens000_rmse@_FillValue
 
-   temperature_at_2m_agl_ensALL_rmse               = temperature_at_2m_agl_ens000_rmse
-   temperature_at_2m_agl_ensALL_rmse@long_name     = "2-m Air Temperature RMSE (all members)"
-   temperature_at_2m_agl_ensALL_rmse@description   = temperature_at_2m_agl_ensALL_rmse@long_name
-   temperature_at_2m_agl_ensALL_rmse@ensemble      = "All 21 Ensemble Members"
-   temperature_at_2m_agl_ensALL_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
-   temperature_at_2m_agl_ensALL_rmse@cell_method   = "ens: lon: lat: rmse"
-   temperature_at_2m_agl_ensALL_rmse(:,:,:)        = temperature_at_2m_agl_ensALL_rmse@_FillValue
+   wind_speed_at_10m_agl_ensALL_rmse               = wind_speed_at_10m_agl_ens000_rmse
+   wind_speed_at_10m_agl_ensALL_rmse@long_name     = "10-m Wind Speed RMSE (all members)"
+   wind_speed_at_10m_agl_ensALL_rmse@description   = wind_speed_at_10m_agl_ensALL_rmse@long_name
+   wind_speed_at_10m_agl_ensALL_rmse@ensemble      = "All 21 Ensemble Members"
+   wind_speed_at_10m_agl_ensALL_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
+   wind_speed_at_10m_agl_ensALL_rmse@cell_method   = "ens: lon: lat: rmse"
+   wind_speed_at_10m_agl_ensALL_rmse(:,:,:)        = wind_speed_at_10m_agl_ensALL_rmse@_FillValue
 
-   temperature_at_2m_agl_ensAVG_rmse               = temperature_at_2m_agl_ens000_rmse
-   temperature_at_2m_agl_ensAVG_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
-   temperature_at_2m_agl_ensAVG_rmse@avg_op_ncl    = "dim_avg_n over dimension(s): ens"
-   temperature_at_2m_agl_ensAVG_rmse@ensemble      = "All 21 Ensemble Members"
-   temperature_at_2m_agl_ensAVG_rmse@long_name     = "2-m Air Temperature RMSE (ensemble mean)"
-   temperature_at_2m_agl_ensAVG_rmse@description   = temperature_at_2m_agl_ensAVG_rmse@long_name
-   temperature_at_2m_agl_ensAVG_rmse@cell_method   = "ens:mean  lon: lat: rmse"
-   temperature_at_2m_agl_ensAVG_rmse(:,:,:)        = temperature_at_2m_agl_ensAVG_rmse@_FillValue
-   temperature_at_2m_agl_ensAVG_rmse@kolczynski_equivalent = "avg(AVars(s),xy)"
-   temperature_at_2m_agl_xy_stdev@kolczynski_equivalent = "EVars(sij)"
+   wind_speed_at_10m_agl_ensAVG_rmse               = wind_speed_at_10m_agl_ens000_rmse
+   wind_speed_at_10m_agl_ensAVG_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
+   wind_speed_at_10m_agl_ensAVG_rmse@avg_op_ncl    = "dim_avg_n over dimension(s): ens"
+   wind_speed_at_10m_agl_ensAVG_rmse@ensemble      = "All 21 Ensemble Members"
+   wind_speed_at_10m_agl_ensAVG_rmse@long_name     = "10-m Wind Speed RMSE (ensemble mean)"
+   wind_speed_at_10m_agl_ensAVG_rmse@description   = wind_speed_at_10m_agl_ensAVG_rmse@long_name
+   wind_speed_at_10m_agl_ensAVG_rmse@cell_method   = "ens:mean  lon: lat: rmse"
+   wind_speed_at_10m_agl_ensAVG_rmse(:,:,:)        = wind_speed_at_10m_agl_ensAVG_rmse@_FillValue
+   wind_speed_at_10m_agl_ensAVG_rmse@kolczynski_equivalent = "avg(AVars(s),xy)"
+   wind_speed_at_10m_agl_xy_stdev@kolczynski_equivalent = "EVars(sij)"
 
-   temperature_at_2m_agl_corr_by_ens               = temperature_at_2m_agl_stdev_by_ens
-   temperature_at_2m_agl_corr_by_ens@long_name     = "2-m Air Temperature Corr by Member"
-   temperature_at_2m_agl_corr_by_ens@description   = temperature_at_2m_agl_corr_by_ens@description
-   temperature_at_2m_agl_corr_by_ens@cell_method   = "lon: lat: corr"
-   temperature_at_2m_agl_corr_by_ens(:,:,:,:)        = temperature_at_2m_agl_corr_by_ens@_FillValue
+   wind_speed_at_10m_agl_corr_by_ens               = wind_speed_at_10m_agl_stdev_by_ens
+   wind_speed_at_10m_agl_corr_by_ens@long_name     = "10-m Wind Speed Corr by Member"
+   wind_speed_at_10m_agl_corr_by_ens@description   = wind_speed_at_10m_agl_corr_by_ens@description
+   wind_speed_at_10m_agl_corr_by_ens@cell_method   = "lon: lat: corr"
+   wind_speed_at_10m_agl_corr_by_ens(:,:,:,:)        = wind_speed_at_10m_agl_corr_by_ens@_FillValue
 
-   temperature_at_2m_agl_bias_by_ens               = temperature_at_2m_agl_stdev_by_ens
-   temperature_at_2m_agl_bias_by_ens@long_name     = "2-m Air Temperature Bias by Member"
-   temperature_at_2m_agl_bias_by_ens@description   = temperature_at_2m_agl_bias_by_ens@description
-   temperature_at_2m_agl_bias_by_ens@cell_method   = "lon: lat: bias"
-   temperature_at_2m_agl_bias_by_ens(:,:,:,:)        = temperature_at_2m_agl_bias_by_ens@_FillValue
+   wind_speed_at_10m_agl_bias_by_ens               = wind_speed_at_10m_agl_stdev_by_ens
+   wind_speed_at_10m_agl_bias_by_ens@long_name     = "10-m Wind Speed Bias by Member"
+   wind_speed_at_10m_agl_bias_by_ens@description   = wind_speed_at_10m_agl_bias_by_ens@description
+   wind_speed_at_10m_agl_bias_by_ens@cell_method   = "lon: lat: bias"
+   wind_speed_at_10m_agl_bias_by_ens(:,:,:,:)        = wind_speed_at_10m_agl_bias_by_ens@_FillValue
 
 
-   temperature_at_2m_agl_rmse_by_ens               = temperature_at_2m_agl_stdev_by_ens
-   temperature_at_2m_agl_rmse_by_ens@long_name     = "2-m Air Temperature RMSE by Member"
-   temperature_at_2m_agl_rmse_by_ens@description   = temperature_at_2m_agl_rmse_by_ens@description
-   temperature_at_2m_agl_rmse_by_ens@cell_method   = "lon: lat: rmse"
-   temperature_at_2m_agl_rmse_by_ens(:,:,:,:)        = temperature_at_2m_agl_rmse_by_ens@_FillValue
+   wind_speed_at_10m_agl_rmse_by_ens               = wind_speed_at_10m_agl_stdev_by_ens
+   wind_speed_at_10m_agl_rmse_by_ens@long_name     = "10-m Wind Speed RMSE by Member"
+   wind_speed_at_10m_agl_rmse_by_ens@description   = wind_speed_at_10m_agl_rmse_by_ens@description
+   wind_speed_at_10m_agl_rmse_by_ens@cell_method   = "lon: lat: rmse"
+   wind_speed_at_10m_agl_rmse_by_ens(:,:,:,:)        = wind_speed_at_10m_agl_rmse_by_ens@_FillValue
 
 
    ; there has to be a beautifully elegant way to get this fast but I don't
@@ -679,60 +690,60 @@ begin
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-            temp_model0    := temperature_at_2m_agl_field(                    t, ifx, 0, :, :, :)
-            temp_analysis0 := temperature_at_2m_agl_field(index_validation_time,   0, 0, :, :, :)
+            temp_model0    := wind_speed_at_10m_agl_field(                    t, ifx, 0, :, :, :)
+            temp_analysis0 := wind_speed_at_10m_agl_field(index_validation_time,   0, 0, :, :, :)
 
             rmse0  := dim_rmsd_n_Wrap(temp_model0, temp_analysis0, (/ 1,2 /) )
             replace_ieeenan(rmse0, rmse0@_FillValue, 0)
 
-            temperature_at_2m_agl_ens000_rmse(t,ifx,:) = (/ rmse0 /)
+            wind_speed_at_10m_agl_ens000_rmse(t,ifx,:) = (/ rmse0 /)
 
             ;...................................................................
 
-            temp_modelA    := temperature_at_2m_agl_field(time |                     t, fx | ifx, elevation_of_screen_height | :, ens | :, lat | :, lon | :)
-            temp_analysisA := temperature_at_2m_agl_field(time | index_validation_time, fx |   0, elevation_of_screen_height | :, ens | :, lat | :, lon | :)
+            temp_modelA    := wind_speed_at_10m_agl_field(time |                     t, fx | ifx, elevation_of_anemometer_height | :, ens | :, lat | :, lon | :)
+            temp_analysisA := wind_speed_at_10m_agl_field(time | index_validation_time, fx |   0, elevation_of_anemometer_height | :, ens | :, lat | :, lon | :)
 
             rmseA := dim_rmsd_n_Wrap(temp_modelA, temp_analysisA, (/ 1,2,3 /) )
             replace_ieeenan(rmseA, rmseA@_FillValue, 0)
 
-            temperature_at_2m_agl_ensALL_rmse(t,ifx,:) = (/ rmseA /)
+            wind_speed_at_10m_agl_ensALL_rmse(t,ifx,:) = (/ rmseA /)
 
             ;...................................................................
 
-            temp_modelM    := dim_avg_n_Wrap(temperature_at_2m_agl_field(                    t, ifx, :, :, :, :), 0)
-            temp_analysisM := dim_avg_n_Wrap(temperature_at_2m_agl_field(index_validation_time,   0, :, :, :, :), 0)
+            temp_modelM    := dim_avg_n_Wrap(wind_speed_at_10m_agl_field(                    t, ifx, :, :, :, :), 0)
+            temp_analysisM := dim_avg_n_Wrap(wind_speed_at_10m_agl_field(index_validation_time,   0, :, :, :, :), 0)
 
             rmseM := dim_rmsd_n_Wrap(temp_modelM, temp_analysisM, (/ 1,2 /) )
             replace_ieeenan(rmseM, rmseM@_FillValue, 0)
 
-            temperature_at_2m_agl_ensAVG_rmse(t,ifx,:) = (/ rmseM /)
+            wind_speed_at_10m_agl_ensAVG_rmse(t,ifx,:) = (/ rmseM /)
 
             ;...................................................................
 
-            temp_modelX    := temperature_at_2m_agl_field(                    t, ifx, :, :, :, :)
+            temp_modelX    := wind_speed_at_10m_agl_field(                    t, ifx, :, :, :, :)
             temp_analysisX := conform_dims(dimsizes(temp_modelX(                                            :,  :, :, :)),    \
-                                      dim_avg_n_Wrap(temperature_at_2m_agl_field(index_validation_time,   0, :,  :, :, :), 0), \
+                                      dim_avg_n_Wrap(wind_speed_at_10m_agl_field(index_validation_time,   0, :,  :, :, :), 0), \
                                       (/ 1,2,3  /) )
 
             rmseM := dim_rmsd_n_Wrap(temp_modelX, temp_analysisX, 0 )
             replace_ieeenan(rmseM, rmseM@_FillValue, 0)
 
-            temperature_at_2m_agl_xy_rmse(t,ifx,:,:,:) = (/ rmseM /)
+            wind_speed_at_10m_agl_xy_rmse(t,ifx,:,:,:) = (/ rmseM /)
 
             ;...................................................................
 
-            temp_modelE    := temperature_at_2m_agl_field(                    t, ifx, :, :, :, :)
-            temp_analysisE := temperature_at_2m_agl_field(index_validation_time,   0, :, :, :, :)
+            temp_modelE    := wind_speed_at_10m_agl_field(                    t, ifx, :, :, :, :)
+            temp_analysisE := wind_speed_at_10m_agl_field(index_validation_time,   0, :, :, :, :)
 
             biasE := dim_avg_n_Wrap((/ (temp_modelE - temp_analysisE)  /), (/ 2, 3 /) )
             replace_ieeenan(biasE, biasE@_FillValue, 0)
 
-            temperature_at_2m_agl_bias_by_ens(t,ifx,:,:) = (/ biasE /)
+            wind_speed_at_10m_agl_bias_by_ens(t,ifx,:,:) = (/ biasE /)
 
             rmseE := dim_rmsd_n_Wrap(temp_modelE, temp_analysisE, (/ 2, 3 /) )
             replace_ieeenan(rmseE, rmseE@_FillValue, 0)
 
-            temperature_at_2m_agl_rmse_by_ens(t,ifx,:,:) = (/ rmseE /)
+            wind_speed_at_10m_agl_rmse_by_ens(t,ifx,:,:) = (/ rmseE /)
 
             do ee = 0, nens-1
                do zz = 0, nz-1
@@ -740,7 +751,7 @@ begin
                   temp_analysisEn := temp_analysisE(ee,zz,:,:)
                   corrE := escorc(ndtooned(temp_modelEn),ndtooned(temp_analysisEn))
                   replace_ieeenan(corrE, corrE@_FillValue, 0)
-                  temperature_at_2m_agl_corr_by_ens(t,ifx,ee,zz) = (/ corrE /)
+                  wind_speed_at_10m_agl_corr_by_ens(t,ifx,ee,zz) = (/ corrE /)
                end do
             end do
 
@@ -752,9 +763,9 @@ begin
                   sprinti("F%0.2i",   toint(fx(ifx))) + " " +  \
                   forecast_valid_time_string(t,ifx) + " " + \
                   forecast_valid_time_string(index_validation_time,0) + " " + \
-                  temperature_at_2m_agl_ens000_rmse( t,ifx,0) + " " + \
-                  temperature_at_2m_agl_bias_by_ens(t,ifx,0,0) + " " + \
-                  temperature_at_2m_agl_corr_by_ens(t,ifx,0,0) )
+                  wind_speed_at_10m_agl_ens000_rmse( t,ifx,0) + " " + \
+                  wind_speed_at_10m_agl_bias_by_ens(t,ifx,0,0) + " " + \
+                  wind_speed_at_10m_agl_corr_by_ens(t,ifx,0,0) )
 
          end if
 
@@ -856,19 +867,19 @@ begin
 
       fout->forecast_valid_time                = forecast_valid_time
 
-      fout->temperature_at_2m_agl_xy_stdev     = temperature_at_2m_agl_xy_stdev
-      fout->temperature_at_2m_agl_xy_rmse      = temperature_at_2m_agl_xy_rmse
-      fout->temperature_at_2m_agl_stdev        = temperature_at_2m_agl_stdev
-      fout->temperature_at_2m_agl_ens000_rmse  = temperature_at_2m_agl_ens000_rmse
-      fout->temperature_at_2m_agl_ensALL_rmse  = temperature_at_2m_agl_ensALL_rmse
-      fout->temperature_at_2m_agl_ensAVG_rmse  = temperature_at_2m_agl_ensAVG_rmse
+      fout->wind_speed_at_10m_agl_xy_stdev     = wind_speed_at_10m_agl_xy_stdev
+      fout->wind_speed_at_10m_agl_xy_rmse      = wind_speed_at_10m_agl_xy_rmse
+      fout->wind_speed_at_10m_agl_stdev        = wind_speed_at_10m_agl_stdev
+      fout->wind_speed_at_10m_agl_ens000_rmse  = wind_speed_at_10m_agl_ens000_rmse
+      fout->wind_speed_at_10m_agl_ensALL_rmse  = wind_speed_at_10m_agl_ensALL_rmse
+      fout->wind_speed_at_10m_agl_ensAVG_rmse  = wind_speed_at_10m_agl_ensAVG_rmse
 
-      fout->temperature_at_2m_agl_corr_by_ens  = temperature_at_2m_agl_corr_by_ens
-      fout->temperature_at_2m_agl_bias_by_ens  = temperature_at_2m_agl_bias_by_ens
-      fout->temperature_at_2m_agl_rmse_by_ens  = temperature_at_2m_agl_rmse_by_ens
+      fout->wind_speed_at_10m_agl_corr_by_ens  = wind_speed_at_10m_agl_corr_by_ens
+      fout->wind_speed_at_10m_agl_bias_by_ens  = wind_speed_at_10m_agl_bias_by_ens
+      fout->wind_speed_at_10m_agl_rmse_by_ens  = wind_speed_at_10m_agl_rmse_by_ens
 
-      fout->temperature_at_2m_agl_avg_by_ens   = temperature_at_2m_agl_avg_by_ens
-      fout->temperature_at_2m_agl_stdev_by_ens = temperature_at_2m_agl_stdev_by_ens
+      fout->wind_speed_at_10m_agl_avg_by_ens   = wind_speed_at_10m_agl_avg_by_ens
+      fout->wind_speed_at_10m_agl_stdev_by_ens = wind_speed_at_10m_agl_stdev_by_ens
 
    delete(fout)
 

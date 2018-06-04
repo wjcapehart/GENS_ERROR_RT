@@ -98,6 +98,38 @@ foreach LOCATION ( $LOCATION_LIST )
 
 
          endif
+
+
+
+         if ( ${VARIABLE} == "MSLP"   &&  ${LOCATION} == "WRFRAP" ) then
+
+            # command-line syntax should read (for example for a fast test case):
+            #  ncl 'FILE_LABEL="MSLP"' 'scenario="WRFRAP"' 'start_date_string="2018-04-10"' 'end_date_string="2017-04-12"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
+
+            echo ncl file_label='"'${VARIABLE}'"' \
+                     scenario='"'${LOCATION}'"' \
+                     start_date_string='"'${START_DATE}'"'   \
+                     end_date_string='"'${END_DATE}'"'       \
+                     working_hour='"'$HH'"'       \
+                     script_plot_triangle_product_MSLP.ncl
+
+            echo
+            echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+            echo
+
+            ncl file_label='"'$VARIABLE'"' \
+                scenario='"'$LOCATION'"' \
+                start_date_string='"'${START_DATE}'"'   \
+                end_date_string='"'${END_DATE}'"'       \
+                working_hour='"'$HH'"'       \
+                script_plot_triangle_product_MSLP.ncl
+
+            echo
+            echo "-----------------------------------------------------"
+            echo
+
+         endif
+
    end
 
 

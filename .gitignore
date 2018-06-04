@@ -1,0 +1,6 @@
+GENS*.nc
+*.pdf
+*.png
+gens*.nc
+._*
+old_files_not_sent_to_github

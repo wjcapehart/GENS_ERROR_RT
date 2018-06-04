@@ -22,6 +22,12 @@ begin
    ;;;;;;;Time Control;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
 
+   ;   start_date_string = "2016-01-01"  ; start date
+   ;   end_date_string   = "2016-01-10"  ; end date;;
+   ;   scenario          = "WRFRAP"
+   ;   working_hour      = "00"
+   ;   file_label        = "ISOHGT"
+
    print("Start = " + start_date_string + " " + working_hour + " UTC")
    print("  End = " + end_date_string   + " " + working_hour + " UTC")
    print(" Site = " + scenario)
@@ -34,9 +40,8 @@ begin
    pdf_directory      = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_pdfs/"
 
 
-   ;start_date_string = "2015-12-25"  ; start date
-   ;end_date_string   = "2017-10-10"  ; end date
-   ;scenario = "WRFRAP"
+
+
    time_intervals       = 6          ; hours between fx products
    time_intervals@units = "hours"
 
@@ -99,7 +104,28 @@ begin
    ;
    ; root director for THREDDS directories
    ;
+
+   URL = "/data/NCAR/GENS/grib2data/"
+   latitude_name  = "lat_0"
+   longitude_name = "lon_0"
+   time_name      = "forecast_time0"
+   isobaricz_name  = "lv_ISBL0"
+   isobarich_name  = "lv_ISBL1"
+   isobaricw_name  = "lv_ISBL2"
+   ensemble_name  = "ensemble0"
+   variable_name  = "TMP_P1_L103_GLL0"
+   mslp_name      = "PRMSL_P1_L101_GLL0"
+
    URL = "http://kyrill.ias.sdsmt.edu:8080/thredds/dodsC/BWW_GENS/"
+   latitude_name   = "lat"
+   longitude_name  = "lon"
+   time_name       = "time"
+   isobaricz_name  = "isobaric"
+   isobarich_name  = "isobaric1"
+   isobaricw_name  = "isobaric2"
+   ensemble_name   = "ens"
+   variable_name   = "Geopotential_height_isobaric_ens"
+   mslp_name       = "Pressure_reduced_to_MSL_msl_ens"
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -126,6 +152,7 @@ begin
 
    start_time_arch = toint(cd_convert(start_time, time_units))
    end_time_arch   = toint(cd_convert(end_time,   time_units))
+
 
    ;
    ; Time Coordinate Created
@@ -165,7 +192,8 @@ begin
 
    f = addfile(metadata_URL, "r")
 
-   lon = f->lon
+
+   lon = f->$longitude_name$
    lon!0 =  "lon"
    lon&lon = lon
    lon@description   = "Longitude"
@@ -178,7 +206,7 @@ begin
 
 
 
-   lat = f->lat
+   lat = f->$latitude_name$
    lat!0 = "lat"
    lat&lat = lat
    lat@description   = "Latitude"
@@ -191,14 +219,14 @@ begin
 
 
       ;location_string = avg(lon)
-         location_string!0 =  "ncl_scalar"
+         location_string!0             =  "ncl_scalar"
          location_string@description   = "Station Location Label"
          location_string@long_name     = "Station Location Label"
 
 
 
       lon_center = avg(lon)
-         lon_center!0 =  "ncl_scalar"
+         lon_center!0             =  "ncl_scalar"
          lon_center@description   = "Longitude Center of Domain"
          lon_center@long_name     = "Longitude Center of Domain"
          lon_center@standard_name = "longitude"
@@ -221,9 +249,10 @@ begin
 
 
 
-   ens = f->ens
 
-   fx  = f->time
+   ens = f->$ensemble_name$
+
+   fx  = f->$time_name$
       fx!0     = "fx"
       fx@units = "hours"
       fx@long_name = "Forecast Time"
@@ -231,7 +260,7 @@ begin
       delete(fx@calendar)
 
 
-   isobaric_height = f->isobaric({isobaric_height_pull})
+   isobaric_height = f->$isobaricz_name$({isobaric_height_pull})
    isobaric_height!0 = "isobaric_height"
    isobaric_height&isobaric_height = isobaric_height
    isobaric_height@axis = "Z"
@@ -239,6 +268,7 @@ begin
    isobaric_height@long_name = "Isobaric surface"
    isobaric_height@description = "Isobaric surface"
    isobaric_height@positive = "down"
+
 
    elevation_of_mean_sea_level = (/ 0. /)
    elevation_of_mean_sea_level!0 = "elevation_of_mean_sea_level"
@@ -343,37 +373,37 @@ begin
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-   ;;;; Create a Isobaric Fields ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-   ;
-   ;  Create a single time array to carry all of the ensemble data
-   ;
+      ;;;; Create a Isobaric Fields ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;
+      ;  Create a single time array to carry all of the ensemble data
+      ;
 
-   print("------------  Initializing Isobaric Fields  ------------")
+      print("------------  Initializing Isobaric Fields  ------------")
 
-   isobaric_height_field = new((/ nt, nfx, nens, np, ny, nx /), float)
-      isobaric_height_field!0        = "time"
-      isobaric_height_field!1        = "fx"
-      isobaric_height_field!2        = "ens"
-      isobaric_height_field!3        = "isobaric_height"
-      isobaric_height_field!4        = "lat"
-      isobaric_height_field!5        = "lon"
-      isobaric_height_field&time     = time
-      isobaric_height_field&fx       = fx
-      isobaric_height_field&ens      = ens
-      isobaric_height_field&isobaric_height = isobaric_height
-      isobaric_height_field&lat      = lat
-      isobaric_height_field&lon      = lon
-      copy_VarAtts(f->Geopotential_height_isobaric_ens, isobaric_height_field)
-      delete(isobaric_height_field@coordinates)
-      isobaric_height_field@_FillValue    = default_fillvalue(typeof(isobaric_height_field))
-      isobaric_height_field@missing_value = isobaric_height_field@_FillValue
-      isobaric_height_field@description   = "Geopotential Height (all members)"
-      isobaric_height_field@long_name     = isobaric_height_field@description
-      isobaric_height_field@standard_name = "geopotential_height"
-      isobaric_height_field(:, :, :, :, :, :) = isobaric_height_field@_FillValue
+      isobaric_height_field = new((/ nt, nfx, nens, np, ny, nx /), float)
+         isobaric_height_field!0        = "time"
+         isobaric_height_field!1        = "fx"
+         isobaric_height_field!2        = "ens"
+         isobaric_height_field!3        = "isobaric_height"
+         isobaric_height_field!4        = "lat"
+         isobaric_height_field!5        = "lon"
+         isobaric_height_field&time     = time
+         isobaric_height_field&fx       = fx
+         isobaric_height_field&ens      = ens
+         isobaric_height_field&isobaric_height = isobaric_height
+         isobaric_height_field&lat      = lat
+         isobaric_height_field&lon      = lon
+         copy_VarAtts(f->Geopotential_height_isobaric_ens, isobaric_height_field)
+         delete(isobaric_height_field@coordinates)
+         isobaric_height_field@_FillValue    = default_fillvalue(typeof(isobaric_height_field))
+         isobaric_height_field@missing_value = isobaric_height_field@_FillValue
+         isobaric_height_field@description   = "Geopotential Height (all members)"
+         isobaric_height_field@long_name     = isobaric_height_field@description
+         isobaric_height_field@standard_name = "geopotential_height"
+         isobaric_height_field(:, :, :, :, :, :) = isobaric_height_field@_FillValue
 
-   ;
-   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
    ;;;; Time for the Reading Loop ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -425,26 +455,39 @@ begin
          ; Pull native file iso
          ;
 
-         z_isobaric  = f->isobaric
-         rh_isobaric = f->isobaric1
-         w_isobaric =  f->isobaric2
+         z_isobaric  = f->$isobaricz_name$
+         rh_isobaric = f->$isobarich_name$
+         w_isobaric =  f->$isobaricw_name$
 
          ;
          ; Extract the fields
          ;
 
-         if ( isfilevar(f,"Geopotential_height_isobaric_ens") ) then
-            inarr = f->Geopotential_height_isobaric_ens
+
+         if ( isfilevar(f,variable_name) ) then
+            inarr =  f->$variable_name$
             replace_ieeenan(inarr, inarr@_FillValue, 0)
-            isobaric_height_field(  t, :, :, {z_isobaric},  :,  :) =    \
-                  (/ inarr(  :, :, {z_isobaric}, :, :) /)
+
+            inarr!0 = "thredds_fx"
+            inarr!1 = "thredds_ens"
+            thredds_fx  = inarr&thredds_fx
+            thredds_ens = inarr&thredds_ens
+            isobaric_height_field( t, {thredds_fx}, {thredds_ens}, :, :, :) = (/ inarr({thredds_fx},{thredds_ens},:,:,:) /)
+            if (dimsizes(thredds_fx).ne.dimsizes(fx)) then
+               print("      !!!!  Error in "+fx_time+" Fx size for "+variable_name)
+            end if
+            if (dimsizes(thredds_ens).ne.dimsizes(ens)) then
+               print("      !!!!  Error in "+fx_time+" Ens size for "+variable_name)
+            end if
+            delete(thredds_fx)
+            delete(thredds_ens)
             delete(inarr)
          end if
          delete(z_isobaric)
          delete(rh_isobaric)
          delete(w_isobaric)
-
       end if
+
 
    end do
 
@@ -469,20 +512,50 @@ begin
    isobaric_height_xy_stdev@long_name     = "Isobaric Geopotential Height StDev by Lat-Lon"
    isobaric_height_xy_stdev@description   = isobaric_height_xy_stdev@long_name
 
+
+
    ; Average stdevs across latitudes and longitudes
    ;  input indexes            : [time] x [fx] x [isobaric] x [lat] x [lon]
    ;  remaining output indexes : [time] x [fx] x [isobaric]
 
    print("------------  Calculating Spatially-Averaged Standard Deviation Fields  ------------")
 
-   isobaric_height_stdev = dim_avg_n_Wrap(isobaric_height_xy_stdev, (/ 3, 4 /))
-   isobaric_height_stdev@long_name     = "Isobaric Geopotential Height StDev"
-   isobaric_height_stdev@description   = "Isobaric Geopotential Height StDev"
-   isobaric_height_stdev@standard_name = "geopotential_height"
-   isobaric_height_stdev@cell_method   = "ens:standard_deviation lon:mean lat:mean"
+
+      isobaric_height_stdev = dim_avg_n_Wrap(isobaric_height_xy_stdev, (/ 3, 4 /))
+      isobaric_height_stdev@long_name     = "Isobaric Geopotential Height StDev"
+      isobaric_height_stdev@description   = "Isobaric Geopotential Height StDev"
+      isobaric_height_stdev@standard_name = "geopotential_height"
+      isobaric_height_stdev@cell_method   = "ens:standard_deviation lon:mean lat:mean"
+
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+   ;;;; Generate Std and Means in X-Y directions ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;
+   ; This takes advangate of the dim_stddev_n_Wrap & dim_avg_n_Wrap
+   ;   function calculates stdev over a range of indexes, in this case
+   ;   the ensembles
+   ;
+   ;  input indicies:    [time] x [fx] x [ens] x [isobaric] x [lat] x [lon]
+   ;
+   ;  remaining output indexes : [time] x [fx] x [ens] x [isobaric]
+
+   print("------------  Calculating Mean and Stdev by Ensemble Layer   ------------")
+
+      isobaric_height_stdev_by_ens               = dim_stddev_n_Wrap(isobaric_height_field, (/ 4, 5 /))
+      isobaric_height_stdev_by_ens@cell_method   = "lon: lat: standard_deviation"
+      isobaric_height_stdev_by_ens@long_name     = "Isobaric Geopotential Height StDev by Member"
+      isobaric_height_stdev_by_ens@description   = isobaric_height_stdev_by_ens@long_name
+
+      isobaric_height_avg_by_ens               = dim_avg_n_Wrap(isobaric_height_field, (/ 4, 5 /))
+      isobaric_height_avg_by_ens@cell_method   = "lon: lat: mean"
+      isobaric_height_avg_by_ens@long_name     = "Isobaric Geopotential Height Mean by Member"
+      isobaric_height_avg_by_ens@description   = isobaric_height_avg_by_ens@long_name
+
+      ;
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
    ;;;; Generate Spatial RMSE Metrics ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
@@ -493,7 +566,7 @@ begin
    print("------------  Creating Spatially-Distributed RMSE Fields  ------------")
 
    isobaric_height_xy_rmse = isobaric_height_xy_stdev
-   isobaric_height_xy_rmse@long_name     = "Geopotential Height RMSE by Lat-Lon"
+   isobaric_height_xy_rmse@long_name     = "Isobaric Geopotential Height RMSE by Lat-Lon"
    isobaric_height_xy_rmse@description   = isobaric_height_xy_rmse@long_name
    isobaric_height_xy_rmse@cell_method   = "ens:rmse"
    isobaric_height_xy_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens" ;"
@@ -515,21 +588,21 @@ begin
 
    print("------------  Creating Spatially-Averaged RMSE Fields  ------------")
 
+
+
    isobaric_height_ens000_rmse               = isobaric_height_stdev
-   isobaric_height_ens000_rmse@long_name     = "Geopotential Height RMSE (control member)"
-   isobaric_height_ens000_rmse@description   = "Geopotential Height RMSE (control member)"
-   isobaric_height_ens000_rmse@standard_name = "geopotential_height"
-   isobaric_height_ens000_rmse@units         = "gpm"
+   isobaric_height_ens000_rmse@long_name     = "Isobaric Geopotential Height RMSE (control member)"
+   isobaric_height_ens000_rmse@description   = isobaric_height_ens000_rmse@description
    isobaric_height_ens000_rmse@ensemble      = "Ensemble Member #00"
    isobaric_height_ens000_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens|0, lat,lon"
    isobaric_height_ens000_rmse@cell_method   = "lon: lat: rmse"
    isobaric_height_ens000_rmse(:,:,:)        = isobaric_height_ens000_rmse@_FillValue
 
    isobaric_height_ensALL_rmse               = isobaric_height_ens000_rmse
-   isobaric_height_ensALL_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
+   isobaric_height_ensALL_rmse@long_name     = "Isobaric Geopotential Height RMSE (all members)"
+   isobaric_height_ensALL_rmse@description   = isobaric_height_ensALL_rmse@long_name
    isobaric_height_ensALL_rmse@ensemble      = "All 21 Ensemble Members"
-   isobaric_height_ensALL_rmse@long_name     = "Geopotential Height RMSE (all members)"
-   isobaric_height_ensALL_rmse@description   = "Geopotential Height RMSE (all members)"
+   isobaric_height_ensALL_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
    isobaric_height_ensALL_rmse@cell_method   = "ens: lon: lat: rmse"
    isobaric_height_ensALL_rmse(:,:,:)        = isobaric_height_ensALL_rmse@_FillValue
 
@@ -537,12 +610,31 @@ begin
    isobaric_height_ensAVG_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
    isobaric_height_ensAVG_rmse@avg_op_ncl    = "dim_avg_n over dimension(s): ens"
    isobaric_height_ensAVG_rmse@ensemble      = "All 21 Ensemble Members"
-   isobaric_height_ensAVG_rmse@long_name     = "Geopotential Height RMSE (ensemble mean)"
-   isobaric_height_ensAVG_rmse@description   = "Geopotential Height RMSE (ensemble mean)"
+   isobaric_height_ensAVG_rmse@long_name     = "Isobaric Geopotential Height RMSE (ensemble mean)"
+   isobaric_height_ensAVG_rmse@description   = isobaric_height_ensAVG_rmse@long_name
    isobaric_height_ensAVG_rmse@cell_method   = "ens:mean  lon: lat: rmse"
-   isobaric_height_ensAVG_rmse(:,:,:)        = isobaric_height_ensALL_rmse@_FillValue
+   isobaric_height_ensAVG_rmse(:,:,:)        = isobaric_height_ensAVG_rmse@_FillValue
    isobaric_height_ensAVG_rmse@kolczynski_equivalent = "avg(AVars(s),xy)"
    isobaric_height_xy_stdev@kolczynski_equivalent = "EVars(sij)"
+
+   isobaric_height_corr_by_ens               = isobaric_height_stdev_by_ens
+   isobaric_height_corr_by_ens@long_name     = "Isobaric Geopotential Height Corr by Member"
+   isobaric_height_corr_by_ens@description   = isobaric_height_corr_by_ens@description
+   isobaric_height_corr_by_ens@cell_method   = "lon: lat: corr"
+   isobaric_height_corr_by_ens(:,:,:,:)        = isobaric_height_corr_by_ens@_FillValue
+
+   isobaric_height_bias_by_ens               = isobaric_height_stdev_by_ens
+   isobaric_height_bias_by_ens@long_name     = "Isobaric Geopotential Height Bias by Member"
+   isobaric_height_bias_by_ens@description   = isobaric_height_bias_by_ens@description
+   isobaric_height_bias_by_ens@cell_method   = "lon: lat: bias"
+   isobaric_height_bias_by_ens(:,:,:,:)        = isobaric_height_bias_by_ens@_FillValue
+
+
+   isobaric_height_rmse_by_ens               = isobaric_height_stdev_by_ens
+   isobaric_height_rmse_by_ens@long_name     = "Isobaric Geopotential Height RMSE by Member"
+   isobaric_height_rmse_by_ens@description   = isobaric_height_rmse_by_ens@description
+   isobaric_height_rmse_by_ens@cell_method   = "lon: lat: rmse"
+   isobaric_height_rmse_by_ens(:,:,:,:)        = isobaric_height_rmse_by_ens@_FillValue
 
 
    ; there has to be a beautifully elegant way to get this fast but I don't
@@ -576,26 +668,15 @@ begin
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-            ; Start with just the 00 Ensemble.
-
-            ; Extract the model fields and analysis fields
-
             temp_model0    := isobaric_height_field(                    t, ifx, 0, :, :, :)
             temp_analysis0 := isobaric_height_field(index_validation_time,   0, 0, :, :, :)
 
-            ; For the master one, it's easy and we can use the dim_rmsd_n func
-
-            rmse0 := dim_rmsd_n_Wrap(temp_model0, temp_analysis0, (/ 1,2 /) )
+            rmse0  := dim_rmsd_n_Wrap(temp_model0, temp_analysis0, (/ 1,2 /) )
             replace_ieeenan(rmse0, rmse0@_FillValue, 0)
 
             isobaric_height_ens000_rmse(t,ifx,:) = (/ rmse0 /)
 
-            ; Now try one with ALL of the ensemble members
-
-            ; Extract the model fields and analysis fields
-
-            ; fields must be re-ordered to swap isobaric and ensemble positions.
-            ;[time | 161] x [fx | 15] x [ens | 21] x [isobaric | 26] x [lat | 22] x [lon | 22]
+            ;...................................................................
 
             temp_modelA    := isobaric_height_field(time |                     t, fx | ifx, isobaric_height | :, ens | :, lat | :, lon | :)
             temp_analysisA := isobaric_height_field(time | index_validation_time, fx |   0, isobaric_height | :, ens | :, lat | :, lon | :)
@@ -605,12 +686,7 @@ begin
 
             isobaric_height_ensALL_rmse(t,ifx,:) = (/ rmseA /)
 
-            ; Finally Average Across all ensemble members and take the RMSE of the result.
-
-            ; Extract the model fields and analysis fields
-
-            ; fields must be re-ordered to swap isobaric and ensemble positions.
-            ;[time | 161] x [fx | 15] x [ens | 21] x [isobaric | 26] x [lat | 22] x [lon | 22]
+            ;...................................................................
 
             temp_modelM    := dim_avg_n_Wrap(isobaric_height_field(                    t, ifx, :, :, :, :), 0)
             temp_analysisM := dim_avg_n_Wrap(isobaric_height_field(index_validation_time,   0, :, :, :, :), 0)
@@ -620,20 +696,44 @@ begin
 
             isobaric_height_ensAVG_rmse(t,ifx,:) = (/ rmseM /)
 
+            ;...................................................................
 
-            ; fields must be re-ordered to swap isobaric and ensemble positions.
-            ;[time | 161] x [fx | 15] x [ens | 21] x [isobaric | 26] x [lat | 22] x [lon | 22]
+            temp_modelX    := isobaric_height_field(                    t, ifx, :, :, :, :)
+            temp_analysisX := conform_dims(dimsizes(temp_modelX(                                            :,  :, :, :)),    \
+                                      dim_avg_n_Wrap(isobaric_height_field(index_validation_time,   0, :,  :, :, :), 0), \
+                                      (/ 1,2,3  /) )
 
-            temp_modelX     := isobaric_height_field(                    t, ifx, :, :, :, :)
-            temp_analysisX0 := dim_avg_n_Wrap(isobaric_height_field(index_validation_time,   0, :,  :, :, :), 0)
-            temp_analysisX  := conform(temp_modelX,              \
-                                       temp_analysisX0,          \
-                                       (/ 1,2,3  /) )
-
-            rmseM := dim_rmsd_n_Wrap(temp_modelX, temp_analysisX, 0)
+            rmseM := dim_rmsd_n_Wrap(temp_modelX, temp_analysisX, 0 )
             replace_ieeenan(rmseM, rmseM@_FillValue, 0)
 
             isobaric_height_xy_rmse(t,ifx,:,:,:) = (/ rmseM /)
+
+            ;...................................................................
+
+            temp_modelE    := isobaric_height_field(                    t, ifx, :, :, :, :)
+            temp_analysisE := isobaric_height_field(index_validation_time,   0, :, :, :, :)
+
+            biasE := dim_avg_n_Wrap((/ (temp_modelE - temp_analysisE)  /), (/ 2, 3 /) )
+            replace_ieeenan(biasE, biasE@_FillValue, 0)
+
+            isobaric_height_bias_by_ens(t,ifx,:,:) = (/ biasE /)
+
+            rmseE := dim_rmsd_n_Wrap(temp_modelE, temp_analysisE, (/ 2, 3 /) )
+            replace_ieeenan(rmseE, rmseE@_FillValue, 0)
+
+            isobaric_height_rmse_by_ens(t,ifx,:,:) = (/ rmseE /)
+
+            do ee = 0, nens-1
+               do zz = 0, np-1
+                  temp_modelEn    := temp_modelE(   ee,zz,:,:)
+                  temp_analysisEn := temp_analysisE(ee,zz,:,:)
+                  corrE := escorc(ndtooned(temp_modelEn),ndtooned(temp_analysisEn))
+                  replace_ieeenan(corrE, corrE@_FillValue, 0)
+                  isobaric_height_corr_by_ens(t,ifx,ee,zz) = (/ corrE /)
+               end do
+            end do
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
             print(sprinti("t%0.5i_", t) + sprinti("f%0.2i", ifx) + \
                   "_vs_" + sprinti("t%0.5i", index_validation_time) + " | " + \
@@ -641,11 +741,9 @@ begin
                   sprinti("F%0.2i",   toint(fx(ifx))) + " " +  \
                   forecast_valid_time_string(t,ifx) + " " + \
                   forecast_valid_time_string(index_validation_time,0) + " " + \
-                  isobaric_height_ens000_rmse( t,ifx,{50000}) + " " + \
-                  isobaric_height_ensALL_rmse(t,ifx,{50000}) + " " + \
-                  isobaric_height_ensAVG_rmse(t,ifx,{50000}) )
-
-            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                  isobaric_height_ens000_rmse(t,ifx,  {500000}) + " " + \
+                  isobaric_height_bias_by_ens(t,ifx,0,{500000}) + " " + \
+                  isobaric_height_corr_by_ens(t,ifx,0,{500000}}) )
 
          end if
 
@@ -658,149 +756,6 @@ begin
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-   ;;;; Plot Our Output  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-   ;
-
-   print("------------  Creating Diagnostic Plots  ------------")
-
-      plot_file = pdf_directory+ "GENS_03_ENSEMBLE__"+file_label+"__ERROR__" + \
-                    scenario + "__"                   + \
-                    start_date_string + "_" + working_hour + "_to_" + \
-                    end_date_string + "_" + working_hour
-
-   wks  = gsn_open_wks("pdf", plot_file) ; send graphics to PDF file
-
-   print("OUTPUT GRAPHIC FILE: "+plot_file)
-
-
-   text_label = "GENS-03 "+scenario          + " "    + \
-                start_date_string + " to " + \
-                end_date_string
-
-
-
-   gsn_define_colormap(wks,"default") ; set color map for graphics
-
-   print("Max Stdev:" +  max( (/ isobaric_height_stdev(:,:,{50000}) /) ) )
-   print("Max Error:" +  max( (/ isobaric_height_ens000_rmse(:,:,{50000}) /) ) )
-
-   res_single                   = True      ; plot mods desired
-      res_single@gsnMaximize    = True      ; maximize plot in frame
-      res_single@xyMarkLineMode = "Markers" ; choose which have markers
-      res_single@xyMarker       = 16        ; choose type of marker
-      res_single@xyMarkerSizeF  = 0.005     ; Marker size (default 0.01)
-      res_single@trXMinF        = 0.0
-      res_single@trXMaxF        = max( (/ isobaric_height_stdev(:,:,{50000}) /) )
-      res_single@trYMinF        = 0.0
-      res_single@trYMaxF        = max( (/ isobaric_height_ens000_rmse(:,:,{50000}) /) )
-      res_single@gsnDraw        = False
-      res_single@gsnFrame       = False
-
-   do ifx = 1, nfx-1
-      res_single@tiMainString = "500-hPa Height CI Wedge for " + \
-                                  sprinti("F%0.2i",   toint(fx(ifx))) ; title
-      res_single@xyMarkerColor      = ifx+1    ; Marker color starts with red@2
-
-      print("plotting "  +res_single@tiMainString)
-
-      plot  = gsn_csm_xy (wks,                                 \
-                          isobaric_height_stdev(:,ifx,{50000}),      \
-                          isobaric_height_ens000_rmse(:,ifx,{50000}), \
-                          res_single)        ; create plot
-
-
-      ;
-      ; Adding a lower descriptive label
-      ;  Justified to Bottom Right
-      ;  Starting at the graphs lower right -> corner
-      ;
-
-      txres                = True
-       txres@txJust = "BottomRight"
-       txres@txFontHeightF = 0.02
-
-      text = gsn_add_text(wks,plot,text_label,res_single@trXMaxF-0.5, \
-                                              res_single@trYMinF+0.5 ,txres)
-
-      draw(plot)
-      frame(wks)
-   end do
-
-
-   ;
-   ; plot all on one graph by Fx.  gsn_csm_xy sets the graph series to the
-   ;     left <- most value.  Here we will need to "shuffle" the array order
-   ;     using the "|" operator.
-   ;
-
-   res_multi                        = True      ; plot mods desired
-      res_multi@tiMainString = "500-hPa Height CI Wedge for All Fx's" ; title
-      res_multi@xyMonoMarkerSize = True
-      res_multi@xyMonoMarker     = True
-      res_multi@xyMarker         = 16        ; choose type of marker
-      res_multi@gsnMaximize      = True      ; maximize plot in frame
-      res_multi@xyMarkLineMode   = "Markers" ; choose which have markers
-      res_multi@xyMarkerColors   = ispan(1,nfx-1,1)+1    ; Marker color starts with red@2
-      res_multi@xyMarkerSizeF    = 0.005     ; Marker size (default 0.01)
-      res_multi@trXMinF          = 0.0
-      res_multi@trXMaxF          = max( (/ isobaric_height_stdev(:,:,0) /) )
-      res_multi@trYMinF          = 0.0
-      res_multi@trYMaxF          = max( (/ isobaric_height_ens000_rmse(:,:,0) /) )
-
-      res_multi@gsnDraw          = False
-      res_multi@gsnFrame         = False
-
-   ind500 = ind(isobaric_height.eq.50000)
-   plot   = gsn_csm_xy (wks,                                       \
-                       isobaric_height_stdev(     fx | 1:nfx-1, time | :, isobaric_height | ind500), \
-                       isobaric_height_ens000_rmse(fx | 1:nfx-1, time | :, isobaric_height | ind500), \
-                       res_multi)        ; create plot
-
-   ;
-   ; legends take a lot of trial and error in NCL.
-   ;    This is an example using the simple_legend command.
-   ;
-
-   lineres = True
-      lineres@LineLengthPercent = 5    ; expressed as %, 0->100, length of line
-      lineres@lgLineColors      = ispan(1,nfx-1,1)+1 ; legend line colors
-
-
-   gres = True
-      gres@YPosPercent = 97.               ; expressed as %, 0->100, sets position of bottom border of legend
-                                        ;  when gres@Position="Bottom" (Default = 95.)
-      gres@XPosPercent = 3.               ; expressed as %, 0->100, sets position of left border of legend
-                                        ;  (Default = 05.)
-      gres@ItemSpacePercent = 2.5          ; expressed as %, 0->100, space between legend items (Default = 5.)
-      gres@LineLabelWhiteSpacePercent = 0.5 ; expressed as %, 0->100, space between line and label (Default = 3.)
-
-
-   textres = True
-      textres@lgLabels = sprinti("F%0.2i", toint(fx(ispan(1,nfx-1,1)))) ; labels (req)
-      textres@lgLabelFontHeight = 0.015                      ; label font heights
-      textres@lgLabelColors = ispan(1,nfx-1,1)+1             ; label font colors
-
-   plot = simple_legend(wks,plot,gres,lineres,textres)
-
-   ;
-   ; Adding a lower descriptive label
-   ;  Justified to Bottom Right
-   ;  Starting at the graphs lower right -> corner
-   ;
-
-
-   txres          = True
-     txres@txJust = "BottomRight"
-
-   text = gsn_add_text(wks,plot,text_label,res_multi@trXMaxF-0.5, \
-                                           res_multi@trYMinF+0.5,txres)
-
-   draw(plot)
-   frame(wks)
-
-   ;
-   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 
    ;;;; Drop Output to File  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -812,13 +767,10 @@ begin
 
    print("------------  Writing Output File  ------------")
 
-   print("------------  Writing Output File  ------------")
-
    output_file = error_directory+ "GENS_03_ENSEMBLE__"+file_label+"__ERROR__" + \
                  scenario + "__" + \
                  start_date_string + "_" + working_hour + "_to_" + \
                  end_date_string + "_" + working_hour + ".nc"
-
 
    print("OUTPUT NETCDF FILE: "+output_file)
 
@@ -862,8 +814,8 @@ begin
       fout@start_date = start_date_string
       fout@end_date   = end_date_string
 
-      fout->time                        = time
-      fout->time                        = time
+      fout->$time_name$                        = time
+      fout->$time_name$                        = time
 
    delete(fout)
 
@@ -880,24 +832,32 @@ begin
 
    fout = addfile(output_file, "w")
 
-      fout->location_label                 = location_string
-      fout->lon_center                     = lon_center
-      fout->lat_center                     = lat_center
-      fout->fx                             = fx
-      fout->isobaric_height                = isobaric_height
-      fout->elevation_of_mean_sea_level    = elevation_of_mean_sea_level
-      fout->elevation_of_screen_height     = elevation_of_screen_height
-      fout->elevation_of_anemometer_height = elevation_of_anemometer_height
-      fout->elevation_at_ground_surface    = elevation_at_ground_surface
+      fout->location_label                     = location_string
+      fout->lon_center                         = lon_center
+      fout->lat_center                         = lat_center
+      fout->fx                                 = fx
+      fout->isobaric_height                    = isobaric_height
+      fout->ens                                = ens
+      fout->elevation_of_mean_sea_level        = elevation_of_mean_sea_level
+      fout->elevation_of_screen_height         = elevation_of_screen_height
+      fout->elevation_of_anemometer_height     = elevation_of_anemometer_height
+      fout->elevation_at_ground_surface        = elevation_at_ground_surface
 
-      fout->forecast_valid_time         = forecast_valid_time
+      fout->forecast_valid_time                = forecast_valid_time
 
-      fout->isobaric_height_stdev       = isobaric_height_stdev
-      fout->isobaric_height_xy_stdev    = isobaric_height_xy_stdev
-      fout->isobaric_height_xy_rmse     = isobaric_height_xy_rmse
-      fout->isobaric_height_ens000_rmse = isobaric_height_ens000_rmse
-      fout->isobaric_height_ensALL_rmse = isobaric_height_ensALL_rmse
-      fout->isobaric_height_ensAVG_rmse = isobaric_height_ensAVG_rmse
+      fout->isobaric_height_xy_stdev     = isobaric_height_xy_stdev
+      fout->isobaric_height_xy_rmse      = isobaric_height_xy_rmse
+      fout->isobaric_height_stdev        = isobaric_height_stdev
+      fout->isobaric_height_ens000_rmse  = isobaric_height_ens000_rmse
+      fout->isobaric_height_ensALL_rmse  = isobaric_height_ensALL_rmse
+      fout->isobaric_height_ensAVG_rmse  = isobaric_height_ensAVG_rmse
+
+      fout->isobaric_height_corr_by_ens  = isobaric_height_corr_by_ens
+      fout->isobaric_height_bias_by_ens  = isobaric_height_bias_by_ens
+      fout->isobaric_height_rmse_by_ens  = isobaric_height_rmse_by_ens
+
+      fout->isobaric_height_avg_by_ens   = isobaric_height_avg_by_ens
+      fout->isobaric_height_stdev_by_ens = isobaric_height_stdev_by_ens
 
    delete(fout)
 

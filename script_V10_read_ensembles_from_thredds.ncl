@@ -22,6 +22,12 @@ begin
    ;;;;;;;Time Control;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
 
+      start_date_string = "2016-01-01"  ; start date
+      end_date_string   = "2016-01-10"  ; end date
+      scenario          = "WRFRAP"
+      working_hour      = "00"
+      file_label        = "V10"
+
    print("Start = " + start_date_string + " " + working_hour + " UTC")
    print("  End = " + end_date_string   + " " + working_hour + " UTC")
    print(" Site = " + scenario)
@@ -33,10 +39,9 @@ begin
    archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
    pdf_directory      = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_pdfs/"
 
+   error_directory    = "./"
 
-   ;start_date_string = "2015-12-25"  ; start date
-   ;end_date_string   = "2017-10-10"  ; end date
-   ;scenario = "WRFRAP"
+
    time_intervals       = 6          ; hours between fx products
    time_intervals@units = "hours"
 
@@ -99,7 +104,28 @@ begin
    ;
    ; root director for THREDDS directories
    ;
+
+   URL = "/data/NCAR/GENS/grib2data/"
+   latitude_name  = "lat_0"
+   longitude_name = "lon_0"
+   time_name      = "forecast_time0"
+   isobaricz_name  = "lv_ISBL0"
+   isobarich_name  = "lv_ISBL1"
+   isobaricw_name  = "lv_ISBL2"
+   ensemble_name  = "ensemble0"
+   variable_name  = "TMP_P1_L103_GLL0"
+   mslp_name      = "PRMSL_P1_L101_GLL0"
+
    URL = "http://kyrill.ias.sdsmt.edu:8080/thredds/dodsC/BWW_GENS/"
+   latitude_name   = "lat"
+   longitude_name  = "lon"
+   time_name       = "time"
+   isobaricz_name  = "isobaric"
+   isobarich_name  = "isobaric1"
+   isobaricw_name  = "isobaric2"
+   ensemble_name   = "ens"
+   variable_name   = "v-component_of_wind_height_above_ground_ens"
+   mslp_name       = "Pressure_reduced_to_MSL_msl_ens"
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -126,6 +152,7 @@ begin
 
    start_time_arch = toint(cd_convert(start_time, time_units))
    end_time_arch   = toint(cd_convert(end_time,   time_units))
+
 
    ;
    ; Time Coordinate Created
@@ -165,7 +192,8 @@ begin
 
    f = addfile(metadata_URL, "r")
 
-   lon = f->lon
+
+   lon = f->$longitude_name$
    lon!0 =  "lon"
    lon&lon = lon
    lon@description   = "Longitude"
@@ -178,7 +206,7 @@ begin
 
 
 
-   lat = f->lat
+   lat = f->$latitude_name$
    lat!0 = "lat"
    lat&lat = lat
    lat@description   = "Latitude"
@@ -191,14 +219,14 @@ begin
 
 
       ;location_string = avg(lon)
-         location_string!0 =  "ncl_scalar"
+         location_string!0             =  "ncl_scalar"
          location_string@description   = "Station Location Label"
          location_string@long_name     = "Station Location Label"
 
 
 
       lon_center = avg(lon)
-         lon_center!0 =  "ncl_scalar"
+         lon_center!0             =  "ncl_scalar"
          lon_center@description   = "Longitude Center of Domain"
          lon_center@long_name     = "Longitude Center of Domain"
          lon_center@standard_name = "longitude"
@@ -222,16 +250,17 @@ begin
 
 
 
-   ens = f->ens
+   ens = f->$ensemble_name$
 
-   fx  = f->time
+   fx  = f->$time_name$
       fx!0     = "fx"
       fx@units = "hours"
       fx@long_name = "Forecast Time"
       fx@description = "Forecast Time"
       delete(fx@calendar)
 
-   isobaric_height = f->isobaric({isobaric_height_pull})
+
+   isobaric_height = f->$isobaricz_name$({isobaric_height_pull})
    isobaric_height!0 = "isobaric_height"
    isobaric_height&isobaric_height = isobaric_height
    isobaric_height@axis = "Z"
@@ -239,6 +268,7 @@ begin
    isobaric_height@long_name = "Isobaric surface"
    isobaric_height@description = "Isobaric surface"
    isobaric_height@positive = "down"
+
 
    elevation_of_mean_sea_level = (/ 0. /)
    elevation_of_mean_sea_level!0 = "elevation_of_mean_sea_level"
@@ -363,7 +393,7 @@ begin
       mean_sea_level_pressure_field&elevation_of_mean_sea_level = elevation_of_mean_sea_level
       mean_sea_level_pressure_field&lat      = lat
       mean_sea_level_pressure_field&lon      = lon
-      copy_VarAtts(f->Pressure_reduced_to_MSL_msl_ens, mean_sea_level_pressure_field)
+      copy_VarAtts(f->$mslp_name$, mean_sea_level_pressure_field)
       delete(mean_sea_level_pressure_field@coordinates)
       mean_sea_level_pressure_field@_FillValue    = default_fillvalue(typeof(mean_sea_level_pressure_field))
       mean_sea_level_pressure_field@missing_value = mean_sea_level_pressure_field@_FillValue
@@ -373,18 +403,17 @@ begin
       mean_sea_level_pressure_field(:, :, :, :, :, :) = mean_sea_level_pressure_field@_FillValue
 
 
-   northward_wind_speed_at_10m_agl_field =  mean_sea_level_pressure_field
-      copy_VarAtts(f->$"v-component_of_wind_height_above_ground_ens"$, northward_wind_speed_at_10m_agl_field)
-      northward_wind_speed_at_10m_agl_field!3        = "elevation_of_anemometer_height"
-      northward_wind_speed_at_10m_agl_field&elevation_of_anemometer_height = elevation_of_anemometer_height
-      northward_wind_speed_at_10m_agl_field@description   = "10-m Nortward Wind Speed (all members)"
-      northward_wind_speed_at_10m_agl_field@long_name     = "10-m Nortward Wind Speed (all members)"
-      northward_wind_speed_at_10m_agl_field@standard_name = "northward_wind"
-      northward_wind_speed_at_10m_agl_field@units         = "m s-1"
-      delete(northward_wind_speed_at_10m_agl_field@coordinates)
-      northward_wind_speed_at_10m_agl_field@_FillValue    = default_fillvalue(typeof(northward_wind_speed_at_10m_agl_field))
-      northward_wind_speed_at_10m_agl_field@missing_value = northward_wind_speed_at_10m_agl_field@_FillValue
-
+   westward_wind_speed_at_10m_agl_field =  mean_sea_level_pressure_field
+      copy_VarAtts(f->Wind_speed_gust_surface_ens, westward_wind_speed_at_10m_agl_field)
+      westward_wind_speed_at_10m_agl_field!3        = "elevation_of_anemometer_height"
+      westward_wind_speed_at_10m_agl_field&elevation_of_anemometer_height = elevation_of_anemometer_height
+      westward_wind_speed_at_10m_agl_field@description   = "10-m Westward Wind Speed (all members)"
+      westward_wind_speed_at_10m_agl_field@long_name     = "10-m Westward Wind Speed (all members)"
+      westward_wind_speed_at_10m_agl_field@standard_name = "westward_wind"
+      westward_wind_speed_at_10m_agl_field@units         = "m s-1"
+      delete(westward_wind_speed_at_10m_agl_field@coordinates)
+      westward_wind_speed_at_10m_agl_field@_FillValue    = default_fillvalue(typeof(westward_wind_speed_at_10m_agl_field))
+      westward_wind_speed_at_10m_agl_field@missing_value = westward_wind_speed_at_10m_agl_field@_FillValue
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -439,38 +468,37 @@ begin
          ; Pull native file iso
          ;
 
-         z_isobaric  = f->isobaric
-         rh_isobaric = f->isobaric1
-         w_isobaric =  f->isobaric2
+         z_isobaric  = f->$isobaricz_name$
+         rh_isobaric = f->$isobarich_name$
+         w_isobaric =  f->$isobaricw_name$
 
          ;
          ; Extract the fields
          ;
 
 
-         if ( isfilevar(f,"v-component_of_wind_height_above_ground_ens") ) then
-            inarr =  f->$"v-component_of_wind_height_above_ground_ens"$
+         if ( isfilevar(f,variable_name) ) then
+            inarr =  f->$variable_name$
             replace_ieeenan(inarr, inarr@_FillValue, 0)
+
             inarr!0 = "thredds_fx"
             inarr!1 = "thredds_ens"
             thredds_fx  = inarr&thredds_fx
             thredds_ens = inarr&thredds_ens
-            northward_wind_speed_at_10m_agl_field( t, {thredds_fx}, {thredds_ens}, 0, :, :) = (/ inarr({thredds_fx},{thredds_ens},0,:,:) /)
+            westward_wind_speed_at_10m_agl_field( t, {thredds_fx}, {thredds_ens}, 0, :, :) = (/ inarr({thredds_fx},{thredds_ens},0,:,:) /)
             if (dimsizes(thredds_fx).ne.dimsizes(fx)) then
-               print("      !!!!  Error in "+fx_time+" Fx size for v-component_of_wind_height_above_ground_ens")
+               print("      !!!!  Error in "+fx_time+" Fx size for " + variable_name)
             end if
             if (dimsizes(thredds_ens).ne.dimsizes(ens)) then
-               print("      !!!!  Error in "+fx_time+" Ens size for v-component_of_wind_height_above_ground_ens")
+               print("      !!!!  Error in "+fx_time+" Ens size for " + variable_name)
             end if
             delete(thredds_fx)
             delete(thredds_ens)
             delete(inarr)
          end if
-
          delete(z_isobaric)
          delete(rh_isobaric)
          delete(w_isobaric)
-
       end if
 
 
@@ -492,10 +520,11 @@ begin
 
    print("------------  Calculating Spatially-Distributed Standard Deviation Fields  ------------")
 
-   northward_wind_speed_at_10m_agl_xy_stdev = dim_stddev_n_Wrap(northward_wind_speed_at_10m_agl_field, 2)
-   northward_wind_speed_at_10m_agl_xy_stdev@cell_method   = "ens:standard_deviation"
-   northward_wind_speed_at_10m_agl_xy_stdev@long_name     = "10-m Northward Wind Speed StDev by Lat-Lon"
-   northward_wind_speed_at_10m_agl_xy_stdev@description   = northward_wind_speed_at_10m_agl_xy_stdev@long_name
+   westward_wind_speed_at_10m_agl_xy_stdev = dim_stddev_n_Wrap(westward_wind_speed_at_10m_agl_field, 2)
+   westward_wind_speed_at_10m_agl_xy_stdev@cell_method   = "ens:standard_deviation"
+   westward_wind_speed_at_10m_agl_xy_stdev@long_name     = "10-m Westward Wind Speed StDev by Lat-Lon"
+   westward_wind_speed_at_10m_agl_xy_stdev@description   = westward_wind_speed_at_10m_agl_xy_stdev@long_name
+
 
 
    ; Average stdevs across latitudes and longitudes
@@ -505,14 +534,41 @@ begin
    print("------------  Calculating Spatially-Averaged Standard Deviation Fields  ------------")
 
 
-      northward_wind_speed_at_10m_agl_stdev = dim_avg_n_Wrap(northward_wind_speed_at_10m_agl_xy_stdev, (/ 3, 4 /))
-      northward_wind_speed_at_10m_agl_stdev@long_name     = "10-m Northward Wind Speed StDev"
-      northward_wind_speed_at_10m_agl_stdev@description   = "10-m Northward Wind Speed StDev"
-      northward_wind_speed_at_10m_agl_stdev@standard_name = "northward_wind"
-      northward_wind_speed_at_10m_agl_stdev@cell_method   = "ens:standard_deviation lon:mean lat:mean"
+      westward_wind_speed_at_10m_agl_stdev = dim_avg_n_Wrap(westward_wind_speed_at_10m_agl_xy_stdev, (/ 3, 4 /))
+      westward_wind_speed_at_10m_agl_stdev@long_name     = "10-m Westward Wind Speed StDev"
+      westward_wind_speed_at_10m_agl_stdev@description   = "10-m Westward Wind Speed StDev"
+      westward_wind_speed_at_10m_agl_stdev@standard_name = "westward_wind"
+      westward_wind_speed_at_10m_agl_stdev@cell_method   = "ens:standard_deviation lon:mean lat:mean"
+
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+   ;;;; Generate Std and Means in X-Y directions ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;
+   ; This takes advangate of the dim_stddev_n_Wrap & dim_avg_n_Wrap
+   ;   function calculates stdev over a range of indexes, in this case
+   ;   the ensembles
+   ;
+   ;  input indicies:    [time] x [fx] x [ens] x [isobaric] x [lat] x [lon]
+   ;
+   ;  remaining output indexes : [time] x [fx] x [ens] x [isobaric]
+
+   print("------------  Calculating Mean and Stdev by Ensemble Layer   ------------")
+
+      westward_wind_speed_at_10m_agl_stdev_by_ens               = dim_stddev_n_Wrap(westward_wind_speed_at_10m_agl_field, (/ 4, 5 /))
+      westward_wind_speed_at_10m_agl_stdev_by_ens@cell_method   = "lon: lat: standard_deviation"
+      westward_wind_speed_at_10m_agl_stdev_by_ens@long_name     = "10-m Westward Wind Speed StDev by Member"
+      westward_wind_speed_at_10m_agl_stdev_by_ens@description   = westward_wind_speed_at_10m_agl_stdev_by_ens@long_name
+
+      westward_wind_speed_at_10m_agl_avg_by_ens               = dim_avg_n_Wrap(westward_wind_speed_at_10m_agl_field, (/ 4, 5 /))
+      westward_wind_speed_at_10m_agl_avg_by_ens@cell_method   = "lon: lat: mean"
+      westward_wind_speed_at_10m_agl_avg_by_ens@long_name     = "10-m Westward Wind Speed Mean by Member"
+      westward_wind_speed_at_10m_agl_avg_by_ens@description   = westward_wind_speed_at_10m_agl_avg_by_ens@long_name
+
+      ;
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
    ;;;; Generate Spatial RMSE Metrics ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
@@ -522,14 +578,14 @@ begin
 
    print("------------  Creating Spatially-Distributed RMSE Fields  ------------")
 
-   northward_wind_speed_at_10m_agl_xy_rmse = northward_wind_speed_at_10m_agl_xy_stdev
-   northward_wind_speed_at_10m_agl_xy_rmse@long_name     = "10-m Northward Wind Speed RMSE by Lat-Lon"
-   northward_wind_speed_at_10m_agl_xy_rmse@description   = northward_wind_speed_at_10m_agl_xy_rmse@long_name
-   northward_wind_speed_at_10m_agl_xy_rmse@cell_method   = "ens:rmse"
-   northward_wind_speed_at_10m_agl_xy_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens" ;"
-   northward_wind_speed_at_10m_agl_xy_rmse(:,:,:,:,:)      = northward_wind_speed_at_10m_agl_xy_rmse@_FillValue
-   delete(northward_wind_speed_at_10m_agl_xy_rmse@stddev_op_ncl)
-   northward_wind_speed_at_10m_agl_xy_rmse@kolczynski_equivalent = "sqrt[AVars(sij)]"
+   westward_wind_speed_at_10m_agl_xy_rmse = westward_wind_speed_at_10m_agl_xy_stdev
+   westward_wind_speed_at_10m_agl_xy_rmse@long_name     = "10-m Westward Wind Speed RMSE by Lat-Lon"
+   westward_wind_speed_at_10m_agl_xy_rmse@description   = westward_wind_speed_at_10m_agl_xy_rmse@long_name
+   westward_wind_speed_at_10m_agl_xy_rmse@cell_method   = "ens:rmse"
+   westward_wind_speed_at_10m_agl_xy_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens" ;"
+   westward_wind_speed_at_10m_agl_xy_rmse(:,:,:,:,:)      = westward_wind_speed_at_10m_agl_xy_rmse@_FillValue
+   delete(westward_wind_speed_at_10m_agl_xy_rmse@stddev_op_ncl)
+   westward_wind_speed_at_10m_agl_xy_rmse@kolczynski_equivalent = "sqrt[AVars(sij)]"
 
    ;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -547,32 +603,52 @@ begin
 
 
 
-   northward_wind_speed_at_10m_agl_ens000_rmse               = northward_wind_speed_at_10m_agl_stdev
-   northward_wind_speed_at_10m_agl_ens000_rmse@long_name     = "10-m Northward Wind Speed RMSE (control member)"
-   northward_wind_speed_at_10m_agl_ens000_rmse@description   = northward_wind_speed_at_10m_agl_ens000_rmse@description
-   northward_wind_speed_at_10m_agl_ens000_rmse@ensemble      = "Ensemble Member #00"
-   northward_wind_speed_at_10m_agl_ens000_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens|0, lat,lon"
-   northward_wind_speed_at_10m_agl_ens000_rmse@cell_method   = "lon: lat: rmse"
-   northward_wind_speed_at_10m_agl_ens000_rmse(:,:,:)        = northward_wind_speed_at_10m_agl_ens000_rmse@_FillValue
+   westward_wind_speed_at_10m_agl_ens000_rmse               = westward_wind_speed_at_10m_agl_stdev
+   westward_wind_speed_at_10m_agl_ens000_rmse@long_name     = "10-m Westward Wind Speed RMSE (control member)"
+   westward_wind_speed_at_10m_agl_ens000_rmse@description   = westward_wind_speed_at_10m_agl_ens000_rmse@description
+   westward_wind_speed_at_10m_agl_ens000_rmse@ensemble      = "Ensemble Member #00"
+   westward_wind_speed_at_10m_agl_ens000_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens|0, lat,lon"
+   westward_wind_speed_at_10m_agl_ens000_rmse@cell_method   = "lon: lat: rmse"
+   westward_wind_speed_at_10m_agl_ens000_rmse(:,:,:)        = westward_wind_speed_at_10m_agl_ens000_rmse@_FillValue
 
-   northward_wind_speed_at_10m_agl_ensALL_rmse               = northward_wind_speed_at_10m_agl_ens000_rmse
-   northward_wind_speed_at_10m_agl_ensALL_rmse@long_name     = "10-m Northward Wind Speed RMSE (all members)"
-   northward_wind_speed_at_10m_agl_ensALL_rmse@description   = northward_wind_speed_at_10m_agl_ensALL_rmse@long_name
-   northward_wind_speed_at_10m_agl_ensALL_rmse@ensemble      = "All 21 Ensemble Members"
-   northward_wind_speed_at_10m_agl_ensALL_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
-   northward_wind_speed_at_10m_agl_ensALL_rmse@cell_method   = "ens: lon: lat: rmse"
-   northward_wind_speed_at_10m_agl_ensALL_rmse(:,:,:)        = northward_wind_speed_at_10m_agl_ensALL_rmse@_FillValue
+   westward_wind_speed_at_10m_agl_ensALL_rmse               = westward_wind_speed_at_10m_agl_ens000_rmse
+   westward_wind_speed_at_10m_agl_ensALL_rmse@long_name     = "10-m Westward Wind Speed RMSE (all members)"
+   westward_wind_speed_at_10m_agl_ensALL_rmse@description   = westward_wind_speed_at_10m_agl_ensALL_rmse@long_name
+   westward_wind_speed_at_10m_agl_ensALL_rmse@ensemble      = "All 21 Ensemble Members"
+   westward_wind_speed_at_10m_agl_ensALL_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
+   westward_wind_speed_at_10m_agl_ensALL_rmse@cell_method   = "ens: lon: lat: rmse"
+   westward_wind_speed_at_10m_agl_ensALL_rmse(:,:,:)        = westward_wind_speed_at_10m_agl_ensALL_rmse@_FillValue
 
-   northward_wind_speed_at_10m_agl_ensAVG_rmse               = northward_wind_speed_at_10m_agl_ens000_rmse
-   northward_wind_speed_at_10m_agl_ensAVG_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
-   northward_wind_speed_at_10m_agl_ensAVG_rmse@avg_op_ncl    = "dim_avg_n over dimension(s): ens"
-   northward_wind_speed_at_10m_agl_ensAVG_rmse@ensemble      = "All 21 Ensemble Members"
-   northward_wind_speed_at_10m_agl_ensAVG_rmse@long_name     = "10-m Northward Wind Speed RMSE (ensemble mean)"
-   northward_wind_speed_at_10m_agl_ensAVG_rmse@description   = northward_wind_speed_at_10m_agl_ensAVG_rmse@long_name
-   northward_wind_speed_at_10m_agl_ensAVG_rmse@cell_method   = "ens:mean  lon: lat: rmse"
-   northward_wind_speed_at_10m_agl_ensAVG_rmse(:,:,:)        = northward_wind_speed_at_10m_agl_ensAVG_rmse@_FillValue
-   northward_wind_speed_at_10m_agl_ensAVG_rmse@kolczynski_equivalent = "avg(AVars(s),xy)"
-   northward_wind_speed_at_10m_agl_xy_stdev@kolczynski_equivalent = "EVars(sij)"
+   westward_wind_speed_at_10m_agl_ensAVG_rmse               = westward_wind_speed_at_10m_agl_ens000_rmse
+   westward_wind_speed_at_10m_agl_ensAVG_rmse@rmsd_op_ncl   = "dim_rmsd_n over dimension(s): ens,lat,lon"
+   westward_wind_speed_at_10m_agl_ensAVG_rmse@avg_op_ncl    = "dim_avg_n over dimension(s): ens"
+   westward_wind_speed_at_10m_agl_ensAVG_rmse@ensemble      = "All 21 Ensemble Members"
+   westward_wind_speed_at_10m_agl_ensAVG_rmse@long_name     = "10-m Westward Wind Speed RMSE (ensemble mean)"
+   westward_wind_speed_at_10m_agl_ensAVG_rmse@description   = westward_wind_speed_at_10m_agl_ensAVG_rmse@long_name
+   westward_wind_speed_at_10m_agl_ensAVG_rmse@cell_method   = "ens:mean  lon: lat: rmse"
+   westward_wind_speed_at_10m_agl_ensAVG_rmse(:,:,:)        = westward_wind_speed_at_10m_agl_ensAVG_rmse@_FillValue
+   westward_wind_speed_at_10m_agl_ensAVG_rmse@kolczynski_equivalent = "avg(AVars(s),xy)"
+   westward_wind_speed_at_10m_agl_xy_stdev@kolczynski_equivalent = "EVars(sij)"
+
+   westward_wind_speed_at_10m_agl_corr_by_ens               = westward_wind_speed_at_10m_agl_stdev_by_ens
+   westward_wind_speed_at_10m_agl_corr_by_ens@long_name     = "10-m Westward Wind Speed Corr by Member"
+   westward_wind_speed_at_10m_agl_corr_by_ens@description   = westward_wind_speed_at_10m_agl_corr_by_ens@description
+   westward_wind_speed_at_10m_agl_corr_by_ens@cell_method   = "lon: lat: corr"
+   westward_wind_speed_at_10m_agl_corr_by_ens(:,:,:,:)        = westward_wind_speed_at_10m_agl_corr_by_ens@_FillValue
+
+   westward_wind_speed_at_10m_agl_bias_by_ens               = westward_wind_speed_at_10m_agl_stdev_by_ens
+   westward_wind_speed_at_10m_agl_bias_by_ens@long_name     = "10-m Westward Wind Speed Bias by Member"
+   westward_wind_speed_at_10m_agl_bias_by_ens@description   = westward_wind_speed_at_10m_agl_bias_by_ens@description
+   westward_wind_speed_at_10m_agl_bias_by_ens@cell_method   = "lon: lat: bias"
+   westward_wind_speed_at_10m_agl_bias_by_ens(:,:,:,:)        = westward_wind_speed_at_10m_agl_bias_by_ens@_FillValue
+
+
+   westward_wind_speed_at_10m_agl_rmse_by_ens               = westward_wind_speed_at_10m_agl_stdev_by_ens
+   westward_wind_speed_at_10m_agl_rmse_by_ens@long_name     = "10-m Westward Wind Speed RMSE by Member"
+   westward_wind_speed_at_10m_agl_rmse_by_ens@description   = westward_wind_speed_at_10m_agl_rmse_by_ens@description
+   westward_wind_speed_at_10m_agl_rmse_by_ens@cell_method   = "lon: lat: rmse"
+   westward_wind_speed_at_10m_agl_rmse_by_ens(:,:,:,:)        = westward_wind_speed_at_10m_agl_rmse_by_ens@_FillValue
+
 
    ; there has to be a beautifully elegant way to get this fast but I don't
    ;   haven't thought of it yet
@@ -605,45 +681,70 @@ begin
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-            temp_model0    := northward_wind_speed_at_10m_agl_field(                    t, ifx, 0, :, :, :)
-            temp_analysis0 := northward_wind_speed_at_10m_agl_field(index_validation_time,   0, 0, :, :, :)
+            temp_model0    := westward_wind_speed_at_10m_agl_field(                    t, ifx, 0, :, :, :)
+            temp_analysis0 := westward_wind_speed_at_10m_agl_field(index_validation_time,   0, 0, :, :, :)
 
             rmse0  := dim_rmsd_n_Wrap(temp_model0, temp_analysis0, (/ 1,2 /) )
             replace_ieeenan(rmse0, rmse0@_FillValue, 0)
 
-            northward_wind_speed_at_10m_agl_ens000_rmse(t,ifx,:) = (/ rmse0 /)
+            westward_wind_speed_at_10m_agl_ens000_rmse(t,ifx,:) = (/ rmse0 /)
 
             ;...................................................................
 
-            temp_modelA    := northward_wind_speed_at_10m_agl_field(time |                     t, fx | ifx, elevation_of_anemometer_height | :, ens | :, lat | :, lon | :)
-            temp_analysisA := northward_wind_speed_at_10m_agl_field(time | index_validation_time, fx |   0, elevation_of_anemometer_height | :, ens | :, lat | :, lon | :)
+            temp_modelA    := westward_wind_speed_at_10m_agl_field(time |                     t, fx | ifx, elevation_of_anemometer_height | :, ens | :, lat | :, lon | :)
+            temp_analysisA := westward_wind_speed_at_10m_agl_field(time | index_validation_time, fx |   0, elevation_of_anemometer_height | :, ens | :, lat | :, lon | :)
 
             rmseA := dim_rmsd_n_Wrap(temp_modelA, temp_analysisA, (/ 1,2,3 /) )
             replace_ieeenan(rmseA, rmseA@_FillValue, 0)
 
-            northward_wind_speed_at_10m_agl_ensALL_rmse(t,ifx,:) = (/ rmseA /)
+            westward_wind_speed_at_10m_agl_ensALL_rmse(t,ifx,:) = (/ rmseA /)
 
             ;...................................................................
 
-            temp_modelM    := dim_avg_n_Wrap(northward_wind_speed_at_10m_agl_field(                    t, ifx, :, :, :, :), 0)
-            temp_analysisM := dim_avg_n_Wrap(northward_wind_speed_at_10m_agl_field(index_validation_time,   0, :, :, :, :), 0)
+            temp_modelM    := dim_avg_n_Wrap(westward_wind_speed_at_10m_agl_field(                    t, ifx, :, :, :, :), 0)
+            temp_analysisM := dim_avg_n_Wrap(westward_wind_speed_at_10m_agl_field(index_validation_time,   0, :, :, :, :), 0)
 
             rmseM := dim_rmsd_n_Wrap(temp_modelM, temp_analysisM, (/ 1,2 /) )
             replace_ieeenan(rmseM, rmseM@_FillValue, 0)
 
-            northward_wind_speed_at_10m_agl_ensAVG_rmse(t,ifx,:) = (/ rmseM /)
+            westward_wind_speed_at_10m_agl_ensAVG_rmse(t,ifx,:) = (/ rmseM /)
 
             ;...................................................................
 
-            temp_modelX    := northward_wind_speed_at_10m_agl_field(                    t, ifx, :, :, :, :)
+            temp_modelX    := westward_wind_speed_at_10m_agl_field(                    t, ifx, :, :, :, :)
             temp_analysisX := conform_dims(dimsizes(temp_modelX(                                            :,  :, :, :)),    \
-                                      dim_avg_n_Wrap(northward_wind_speed_at_10m_agl_field(index_validation_time,   0, :,  :, :, :), 0), \
+                                      dim_avg_n_Wrap(westward_wind_speed_at_10m_agl_field(index_validation_time,   0, :,  :, :, :), 0), \
                                       (/ 1,2,3  /) )
 
             rmseM := dim_rmsd_n_Wrap(temp_modelX, temp_analysisX, 0 )
             replace_ieeenan(rmseM, rmseM@_FillValue, 0)
 
-            northward_wind_speed_at_10m_agl_xy_rmse(t,ifx,:,:,:) = (/ rmseM /)
+            westward_wind_speed_at_10m_agl_xy_rmse(t,ifx,:,:,:) = (/ rmseM /)
+
+            ;...................................................................
+
+            temp_modelE    := westward_wind_speed_at_10m_agl_field(                    t, ifx, :, :, :, :)
+            temp_analysisE := westward_wind_speed_at_10m_agl_field(index_validation_time,   0, :, :, :, :)
+
+            biasE := dim_avg_n_Wrap((/ (temp_modelE - temp_analysisE)  /), (/ 2, 3 /) )
+            replace_ieeenan(biasE, biasE@_FillValue, 0)
+
+            westward_wind_speed_at_10m_agl_bias_by_ens(t,ifx,:,:) = (/ biasE /)
+
+            rmseE := dim_rmsd_n_Wrap(temp_modelE, temp_analysisE, (/ 2, 3 /) )
+            replace_ieeenan(rmseE, rmseE@_FillValue, 0)
+
+            westward_wind_speed_at_10m_agl_rmse_by_ens(t,ifx,:,:) = (/ rmseE /)
+
+            do ee = 0, nens-1
+               do zz = 0, nz-1
+                  temp_modelEn    := temp_modelE(   ee,zz,:,:)
+                  temp_analysisEn := temp_analysisE(ee,zz,:,:)
+                  corrE := escorc(ndtooned(temp_modelEn),ndtooned(temp_analysisEn))
+                  replace_ieeenan(corrE, corrE@_FillValue, 0)
+                  westward_wind_speed_at_10m_agl_corr_by_ens(t,ifx,ee,zz) = (/ corrE /)
+               end do
+            end do
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -653,9 +754,9 @@ begin
                   sprinti("F%0.2i",   toint(fx(ifx))) + " " +  \
                   forecast_valid_time_string(t,ifx) + " " + \
                   forecast_valid_time_string(index_validation_time,0) + " " + \
-                  northward_wind_speed_at_10m_agl_ens000_rmse( t,ifx,:) + " " + \
-                  northward_wind_speed_at_10m_agl_ensALL_rmse(t,ifx,:) + " " + \
-                  northward_wind_speed_at_10m_agl_ensAVG_rmse(t,ifx,:) )
+                  westward_wind_speed_at_10m_agl_ens000_rmse( t,ifx,0) + " " + \
+                  westward_wind_speed_at_10m_agl_bias_by_ens(t,ifx,0,0) + " " + \
+                  westward_wind_speed_at_10m_agl_corr_by_ens(t,ifx,0,0) )
 
          end if
 
@@ -701,7 +802,8 @@ begin
       fout@title = "GENS Ensemble Variance and Error for Region " + \
                   scenario + " " +                                 \
                   start_date_string + "_" + working_hour + "_to_" + \
-                 end_date_string + "_" + working_hour
+                  end_date_string + "_" + working_hour
+
 
       fout@institution       = "SD School of Mines and Big Weather Web Project"
       fout@author            = "Bill Capehart, SD-Mines, William.Capehart@sdsmt.edu"
@@ -725,8 +827,8 @@ begin
       fout@start_date = start_date_string
       fout@end_date   = end_date_string
 
-      fout->time                        = time
-      fout->time                        = time
+      fout->$time_name$                        = time
+      fout->$time_name$                        = time
 
    delete(fout)
 
@@ -743,24 +845,32 @@ begin
 
    fout = addfile(output_file, "w")
 
-      fout->location_label                 = location_string
-      fout->lon_center                     = lon_center
-      fout->lat_center                     = lat_center
-      fout->fx                             = fx
-      fout->isobaric_height                = isobaric_height
-      fout->elevation_of_mean_sea_level    = elevation_of_mean_sea_level
-      fout->elevation_of_screen_height     = elevation_of_screen_height
-      fout->elevation_of_anemometer_height = elevation_of_anemometer_height
-      fout->elevation_at_ground_surface    = elevation_at_ground_surface
+      fout->location_label                     = location_string
+      fout->lon_center                         = lon_center
+      fout->lat_center                         = lat_center
+      fout->fx                                 = fx
+      fout->isobaric_height                    = isobaric_height
+      fout->ens                                = ens
+      fout->elevation_of_mean_sea_level        = elevation_of_mean_sea_level
+      fout->elevation_of_screen_height         = elevation_of_screen_height
+      fout->elevation_of_anemometer_height     = elevation_of_anemometer_height
+      fout->elevation_at_ground_surface        = elevation_at_ground_surface
 
-      fout->forecast_valid_time         = forecast_valid_time
+      fout->forecast_valid_time                = forecast_valid_time
 
-      fout->northward_wind_speed_at_10m_agl_xy_stdev    = northward_wind_speed_at_10m_agl_xy_stdev
-      fout->northward_wind_speed_at_10m_agl_xy_rmse     = northward_wind_speed_at_10m_agl_xy_rmse
-      fout->northward_wind_speed_at_10m_agl_stdev       = northward_wind_speed_at_10m_agl_stdev
-      fout->northward_wind_speed_at_10m_agl_ens000_rmse = northward_wind_speed_at_10m_agl_ens000_rmse
-      fout->northward_wind_speed_at_10m_agl_ensALL_rmse = northward_wind_speed_at_10m_agl_ensALL_rmse
-      fout->northward_wind_speed_at_10m_agl_ensAVG_rmse = northward_wind_speed_at_10m_agl_ensAVG_rmse
+      fout->westward_wind_speed_at_10m_agl_xy_stdev     = westward_wind_speed_at_10m_agl_xy_stdev
+      fout->westward_wind_speed_at_10m_agl_xy_rmse      = westward_wind_speed_at_10m_agl_xy_rmse
+      fout->westward_wind_speed_at_10m_agl_stdev        = westward_wind_speed_at_10m_agl_stdev
+      fout->westward_wind_speed_at_10m_agl_ens000_rmse  = westward_wind_speed_at_10m_agl_ens000_rmse
+      fout->westward_wind_speed_at_10m_agl_ensALL_rmse  = westward_wind_speed_at_10m_agl_ensALL_rmse
+      fout->westward_wind_speed_at_10m_agl_ensAVG_rmse  = westward_wind_speed_at_10m_agl_ensAVG_rmse
+
+      fout->westward_wind_speed_at_10m_agl_corr_by_ens  = westward_wind_speed_at_10m_agl_corr_by_ens
+      fout->westward_wind_speed_at_10m_agl_bias_by_ens  = westward_wind_speed_at_10m_agl_bias_by_ens
+      fout->westward_wind_speed_at_10m_agl_rmse_by_ens  = westward_wind_speed_at_10m_agl_rmse_by_ens
+
+      fout->westward_wind_speed_at_10m_agl_avg_by_ens   = westward_wind_speed_at_10m_agl_avg_by_ens
+      fout->westward_wind_speed_at_10m_agl_stdev_by_ens = westward_wind_speed_at_10m_agl_stdev_by_ens
 
    delete(fout)
 
