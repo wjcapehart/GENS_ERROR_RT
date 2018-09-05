@@ -22,11 +22,11 @@ begin
    ;;;;;;;Time Control;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
 
-   ;   start_date_string = "2016-01-01"  ; start date
-   ;   end_date_string   = "2016-01-10"  ; end date;;
-   ;   scenario          = "WRFRAP"
-   ;   working_hour      = "00"
-   ;   file_label        = "ISOHGT"
+  ;    start_date_string = "2016-01-01"  ; start date
+  ;    end_date_string   = "2016-01-10"  ; end date;;
+  ;    scenario          = "WRFRAP"
+  ;    working_hour      = "00"
+  ;    file_label        = "ISOHGT"
 
    print("Start = " + start_date_string + " " + working_hour + " UTC")
    print("  End = " + end_date_string   + " " + working_hour + " UTC")
@@ -40,7 +40,7 @@ begin
    pdf_directory      = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_pdfs/"
 
 
-
+ ;  error_directory = "./"
 
    time_intervals       = 6          ; hours between fx products
    time_intervals@units = "hours"
@@ -741,9 +741,9 @@ begin
                   sprinti("F%0.2i",   toint(fx(ifx))) + " " +  \
                   forecast_valid_time_string(t,ifx) + " " + \
                   forecast_valid_time_string(index_validation_time,0) + " " + \
-                  isobaric_height_ens000_rmse(t,ifx,  {500000}) + " " + \
-                  isobaric_height_bias_by_ens(t,ifx,0,{500000}) + " " + \
-                  isobaric_height_corr_by_ens(t,ifx,0,{500000}}) )
+                  isobaric_height_ens000_rmse(t,ifx,  0) + " " + \
+                  isobaric_height_bias_by_ens(t,ifx,0,0) + " " + \
+                  isobaric_height_corr_by_ens(t,ifx,0,0) )
 
          end if
 

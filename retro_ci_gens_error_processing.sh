@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # start and end dates for the long run
-LONG_GAME_START_DATE=2016-06-01
+LONG_GAME_START_DATE=2017-10-29
 LONG_GAME_END_DATE=2018-03-17
 
 # converting these into time in system seconds
@@ -85,7 +85,7 @@ do
                 start_date_string='"'$START_DATE'"'   \
                 end_date_string='"'${END_DATE}'"'       \
                 working_hour='"'${WORKING_HOUR}'"'       \
-                script_${VARIABLE}_read_ensembles_from_thredds.ncl
+                ./script_${VARIABLE}_read_ensembles_from_thredds.ncl
 
             echo
             echo "-----------------------------------------------------"
@@ -116,7 +116,7 @@ do
                    start_date_string='"'${START_DATE}'"'   \
                    end_date_string='"'${END_DATE}'"'       \
                    working_hour='"'${WORKING_HOUR}'"'       \
-                   script_plot_triangle_product_ISOHGT.ncl
+                   ./script_plot_triangle_product_ISOHGT.ncl
 
                echo
                echo "-----------------------------------------------------"

@@ -41,7 +41,7 @@ foreach LOCATION ( $LOCATION_LIST )
          echo
 
          # command-line syntax should read (for example for a fast test case):
-         #  ncl 'FILE_LABEL="T2M"' 'scenario="WRFRAP"' 'start_date_string="2016-01-01"' 'end_date_string="2016-01-10"'  script_T2M_read_ensembles_from_thredds.ncl
+         #  ncl 'file_label="T2M"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'  script_T2M_read_ensembles_from_thredds.ncl
 
          echo ncl file_label='"'${VARIABLE}'"' \
                   scenario='"'${LOCATION}'"' \
@@ -71,7 +71,7 @@ foreach LOCATION ( $LOCATION_LIST )
 
 
             # command-line syntax should read (for example for a fast test case):
-            #  ncl 'FILE_LABEL="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-14"' 'end_date_string="2017-03-16"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
+            #  ncl 'file_label="ISOHGT"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_ISOHGT.ncl
 
             echo ncl file_label='"'${VARIABLE}'"' \
                      scenario='"'${LOCATION}'"' \
@@ -104,7 +104,7 @@ foreach LOCATION ( $LOCATION_LIST )
          if ( ${VARIABLE} == "MSLP"   &&  ${LOCATION} == "WRFRAP" ) then
 
             # command-line syntax should read (for example for a fast test case):
-            #  ncl 'FILE_LABEL="MSLP"' 'scenario="WRFRAP"' 'start_date_string="2018-04-10"' 'end_date_string="2017-04-12"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
+            #  ncl 'file_label="MSLP"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_ISOHGT.ncl
 
             echo ncl file_label='"'${VARIABLE}'"' \
                      scenario='"'${LOCATION}'"' \
@@ -129,6 +129,40 @@ foreach LOCATION ( $LOCATION_LIST )
             echo
 
          endif
+
+
+
+
+        if ( ${VARIABLE} == "T2M"   &&  ${LOCATION} == "WRFRAP" ) then
+
+           # command-line syntax should read (for example for a fast test case):
+           #  ncl 'file_label="MSLP"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_ISOHGT.ncl
+
+           echo ncl file_label='"'${VARIABLE}'"' \
+                    scenario='"'${LOCATION}'"' \
+                    start_date_string='"'${START_DATE}'"'   \
+                    end_date_string='"'${END_DATE}'"'       \
+                    working_hour='"'$HH'"'       \
+                    script_plot_triangle_product_T2M.ncl
+
+           echo
+           echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+           echo
+
+           ncl file_label='"'$VARIABLE'"' \
+               scenario='"'$LOCATION'"' \
+               start_date_string='"'${START_DATE}'"'   \
+               end_date_string='"'${END_DATE}'"'       \
+               working_hour='"'$HH'"'       \
+               script_plot_triangle_product_T2M.ncl
+
+           echo
+           echo "-----------------------------------------------------"
+           echo
+
+        endif
+
+
 
    end
 
