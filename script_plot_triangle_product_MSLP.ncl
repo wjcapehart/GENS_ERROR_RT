@@ -260,9 +260,14 @@ printVarSummary(all_mean_sea_level_pressure_stdev)
          txres@txJust        = "TopLeft"
          txres@txFontHeightF = 0.02
 
-      text = gsn_add_text(wks,plot(plotn),text_label,res_single@trXMinF+0.5, \
-                                              res_single@trYMaxF-0.55 ,txres)
+         x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
+         y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
 
+         text = gsn_add_text(wks,plot(plotn), \
+                                 text_label, \
+                                 res_single@trXMinF + x_ULC, \
+                                 res_single@trYMaxF - y_ULC, \
+                                 txres)
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;
@@ -500,10 +505,14 @@ do fx_time = 1, 4, 1
    txres                  = True
       txres@txJust        = "TopLeft"
       txres@txFontHeightF = 0.02
+      x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
+      y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
 
-   text = gsn_add_text(wks,plot(plotn),text_label,res_single@trXMinF+0.50, \
-                                                  res_single@trYMaxF-0.55, txres)
-
+      text = gsn_add_text(wks,plot(plotn), \
+                              text_label, \
+                              res_single@trXMinF + x_ULC, \
+                              res_single@trYMaxF - y_ULC, \
+                              txres)
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;

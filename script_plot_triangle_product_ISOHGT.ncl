@@ -254,9 +254,15 @@ begin
          txres@txJust        = "TopLeft"
          txres@txFontHeightF = 0.02
 
-      text = gsn_add_text(wks,plot(plotn),text_label,res_single@trXMinF+0.5, \
-                                              res_single@trYMaxF-0.55 ,txres)
 
+     x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
+     y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
+
+     text = gsn_add_text(wks,plot(plotn), \
+                             text_label, \
+                             res_single@trXMinF + x_ULC, \
+                             res_single@trYMaxF - y_ULC, \
+                             txres)
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;
@@ -304,7 +310,8 @@ begin
 
 
          res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend.
-         res_single2@pmLegendOrthogonalPosF = -0.515      ; Move into plot
+         res_single2@pmLegendSide           = "Top"
+         res_single2@pmLegendOrthogonalPosF = -0.4      ; Move into plot
          res_single2@pmLegendParallelPosF   = 1.0       ; Move to right
          res_single2@pmLegendWidthF         = 0.2       ; Decrease width
          res_single2@pmLegendHeightF        = 0.2       ; Decrease height
@@ -490,9 +497,15 @@ do fx_time = 1, 4, 1
       txres@txJust        = "TopLeft"
       txres@txFontHeightF = 0.02
 
-   text = gsn_add_text(wks,plot(plotn),text_label,res_single@trXMinF+0.50, \
-                                                  res_single@trYMaxF-0.55, txres)
 
+    x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
+    y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
+
+    text = gsn_add_text(wks,plot(plotn), \
+                            text_label, \
+                            res_single@trXMinF + x_ULC, \
+                            res_single@trYMaxF - y_ULC, \
+                            txres)
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;

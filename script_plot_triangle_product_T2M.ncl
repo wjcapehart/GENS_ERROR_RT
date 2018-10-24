@@ -260,9 +260,14 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
          txres@txJust        = "TopLeft"
          txres@txFontHeightF = 0.02
 
-      text = gsn_add_text(wks,plot(plotn),text_label,res_single@trXMinF+0.5, \
-                                              res_single@trYMaxF-0.55 ,txres)
+         x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
+         y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
 
+         text = gsn_add_text(wks,plot(plotn), \
+                                 text_label, \
+                                 res_single@trXMinF + x_ULC, \
+                                 res_single@trYMaxF - y_ULC, \
+                                 txres)
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;
@@ -315,7 +320,8 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
 
 
          res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend.
-         res_single2@pmLegendOrthogonalPosF = -0.515      ; Move into plot
+         res_single2@pmLegendSide           = "Top"
+         res_single2@pmLegendOrthogonalPosF = -0.4      ; Move into plot
          res_single2@pmLegendParallelPosF   = 1.0       ; Move to right
          res_single2@pmLegendWidthF         = 0.2       ; Decrease width
          res_single2@pmLegendHeightF        = 0.2       ; Decrease height
@@ -478,7 +484,7 @@ do fx_time = 1, 4, 1
    ;res_single@tiMainString  = "CI Wedge for "  + end_date_string + "Z"; title
 
    res_single@gsnLeftString  = "Past "+forecast_valid_time_string(nt_recent-1,fx_time) + " Performance"
-   res_single@gsnRightString = "MSLP"
+   res_single@gsnRightString = "2-m Air Temp"
 
    res_single@xyMarkerColor = "grey79"   ; Marker color starts with red@2
 
@@ -501,15 +507,20 @@ do fx_time = 1, 4, 1
       txres@txJust        = "TopLeft"
       txres@txFontHeightF = 0.02
 
-   text = gsn_add_text(wks,plot(plotn),text_label,res_single@trXMinF+0.50, \
-                                                  res_single@trYMaxF-0.55, txres)
+      x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
+      y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
 
+      text = gsn_add_text(wks,plot(plotn), \
+                              text_label, \
+                              res_single@trXMinF + x_ULC, \
+                              res_single@trYMaxF - y_ULC, \
+                              txres)
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
    ;   Inventory current fields for missing verifcation data
    ;     (these are the most current forecsts that have not had time
-   ;     to be verified)
+   ;     to be verified
 
    n_forecast_dates = dimsizes(recent_temperature_at_2m_agl_ens000_rmse(time | :, fx | fx_time-1, elevation_of_screen_height | 0))
 
