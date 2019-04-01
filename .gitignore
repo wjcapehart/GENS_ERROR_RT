@@ -8,3 +8,7 @@ error_pdfs
 triangle_archives
 ci_graphics
 old_files_not_sent_to_github
+.Rdata
+.RData
+*.Rdata
+*.RData
