@@ -322,11 +322,7 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
          res_single2@xyLineThicknessF =  1.5
 
 
-<<<<<<< HEAD
          res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend.
-=======
-         res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend. 
->>>>>>> 6329c7447f1c7f9ffff0ffbd81b3bd970a399ebb
          res_single2@pmLegendSide           = "Top"
          res_single2@pmLegendOrthogonalPosF = -0.4      ; Move into plot
          res_single2@pmLegendParallelPosF   = 1.0       ; Move to right
