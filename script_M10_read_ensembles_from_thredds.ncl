@@ -480,10 +480,10 @@ begin
          if ( isfilevar(f,"u-component_of_wind_height_above_ground_ens") .and. \
               isfilevar(f,"v-component_of_wind_height_above_ground_ens") ) then
 
-            inarr_u =  f->$"u-component_of_wind_height_above_ground_ens"$
+            inarr_u :=  f->$"u-component_of_wind_height_above_ground_ens"$
             replace_ieeenan(inarr_u, inarr_u@_FillValue, 0)
 
-            inarr_v =  f->$"v-component_of_wind_height_above_ground_ens"$
+            inarr_v :=  f->$"v-component_of_wind_height_above_ground_ens"$
             replace_ieeenan(inarr_v, inarr_v@_FillValue, 0)
 
             inarr = inarr_u

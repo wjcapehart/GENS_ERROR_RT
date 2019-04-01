@@ -310,7 +310,7 @@ printVarSummary(all_mean_sea_level_pressure_stdev)
          res_single2@xyMonoMarkerSize = True
          res_single2@xyMonoMarker     = True
          res_single2@xyMarker         = 16        ; choose type of marker
-         res_single2@xyMarkerSizeF    = 0.0075     ; Marker size (default 0.01)
+         res_single2@xyMarkerSizeF    = 0.015     ; Marker size (default 0.01)
          res_single2@xyMarkerColors   = line_colours   ; Marker color starts with red@2
 
         ; dptr
@@ -320,7 +320,8 @@ printVarSummary(all_mean_sea_level_pressure_stdev)
 
 
          res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend.
-         res_single2@pmLegendOrthogonalPosF = -0.515      ; Move into plot
+         res_single2@pmLegendSide           = "Top"
+         res_single2@pmLegendOrthogonalPosF = -0.4      ; Move into plot
          res_single2@pmLegendParallelPosF   = 1.0       ; Move to right
          res_single2@pmLegendWidthF         = 0.2       ; Decrease width
          res_single2@pmLegendHeightF        = 0.2       ; Decrease height

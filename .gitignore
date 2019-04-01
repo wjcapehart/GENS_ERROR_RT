@@ -3,4 +3,8 @@ GENS*.nc
 *.png
 gens*.nc
 ._*
+error_data
+error_pdfs
+triangle_archives
+ci_graphics
 old_files_not_sent_to_github

@@ -77,9 +77,12 @@ begin
      all_fx                          = fin->fx
      all_isobaric                    = fin->isobaric_height
      all_forecast_valid_time         = fin->forecast_valid_time
-     all_isobaric_height_stdev       = fin->isobaric_height_stdev(      :,:,{isobaric_height_pull})
-     all_isobaric_height_ens000_rmse = fin->isobaric_height_ens000_rmse(:,:,{isobaric_height_pull})
-     all_isobaric_height_ensALL_rmse = fin->isobaric_height_ensALL_rmse(:,:,{isobaric_height_pull})
+
+     k_all_isobaric_height_pull = ind(all_isobaric .eq. isobaric_height_pull)
+
+     all_isobaric_height_stdev       = fin->isobaric_height_stdev(      :,:,k_all_isobaric_height_pull)
+     all_isobaric_height_ens000_rmse = fin->isobaric_height_ens000_rmse(:,:,k_all_isobaric_height_pull)
+     all_isobaric_height_ensALL_rmse = fin->isobaric_height_ensALL_rmse(:,:,k_all_isobaric_height_pull)
 
    delete(fin)
 
@@ -100,9 +103,18 @@ begin
      recent_fx                          = frecent->fx
      recent_isobaric_height             = frecent->isobaric_height
      recent_forecast_valid_time         = frecent->forecast_valid_time
-     recent_isobaric_height_stdev       = frecent->isobaric_height_stdev(      :,:,{isobaric_height_pull})
-     recent_isobaric_height_ens000_rmse = frecent->isobaric_height_ens000_rmse(:,:,{isobaric_height_pull})
-     recent_isobaric_height_ensALL_rmse = frecent->isobaric_height_ensALL_rmse(:,:,{isobaric_height_pull})
+
+      print(isobaric_height_pull)
+
+     print(recent_isobaric_height)
+
+
+     k_pull_isobaric = ind(recent_isobaric_height .eq. isobaric_height_pull)
+
+
+     recent_isobaric_height_stdev       = frecent->isobaric_height_stdev(      :,:,k_pull_isobaric)
+     recent_isobaric_height_ens000_rmse = frecent->isobaric_height_ens000_rmse(:,:,k_pull_isobaric)
+     recent_isobaric_height_ensALL_rmse = frecent->isobaric_height_ensALL_rmse(:,:,k_pull_isobaric)
 
    delete(frecent)
 
@@ -300,7 +312,7 @@ begin
          res_single2@xyMonoMarkerSize = True
          res_single2@xyMonoMarker     = True
          res_single2@xyMarker         = 16        ; choose type of marker
-         res_single2@xyMarkerSizeF    = 0.0075     ; Marker size (default 0.01)
+         res_single2@xyMarkerSizeF    = 0.015     ; Marker size (default 0.01)
          res_single2@xyMarkerColors   = line_colours   ; Marker color starts with red@2
 
         ; dptr

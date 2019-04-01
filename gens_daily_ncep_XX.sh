@@ -16,6 +16,7 @@ declare -a VARIABLE_LIST=( ISOHGT
                            SPCH2M
                            U10
                            V10
+                           M10
                            UFLX
                            VFLX
                            FRICV

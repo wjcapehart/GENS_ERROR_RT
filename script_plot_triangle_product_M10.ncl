@@ -11,9 +11,7 @@ begin
    ;;;;;;;Time Control;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
 
-  ; start_date_string = "2018-05-30"
-  ; end_date_string = "2018-06-01"
-;   working_hour = "00"
+
 
       ;;;; Developing the Time Coordinates ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
@@ -33,10 +31,10 @@ begin
    desired_max_fx_time = 24
       desired_max_fx_time@units = "hours"
 
-   archive_directory  = "/projects/BIG_WEATHER/wjc/GENS_Processing/arch/"
-   error_directory    = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_data/"
-   graphics_directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/ci_graphics/"
-   archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
+      archive_directory  = "/projects/BIG_WEATHER/wjc/GENS_Processing/arch/"
+      error_directory    = "/projects/BIG_WEATHER/GENS_ERROR_RT/error_data/"
+      graphics_directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/ci_graphics/"
+      archive_directory  = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
 
 
    ;
@@ -63,7 +61,7 @@ begin
    ; Create Input File File with all available verified forecasts
    ;
 
-   all_data_file = archive_directory + "gens_03_ensemble__T2M__error__" + scenario + "__2016-01-01_00_to_2018-03-31_00.nc"
+   all_data_file = archive_directory + "gens_03_ensemble__M10__ERROR__" + scenario + "__2015-06-01_00_to_2018-03-31_00.nc"
 
    ; pretend file for now that has the last 10 VERIFIED forecasts
    recent_data_file = all_data_file
@@ -75,37 +73,37 @@ begin
 
    fin = addfile(all_data_file, "r")
 
-     all_time                        = fin->time
-     all_fx                          = fin->fx
-     all_elevation_of_mean_sea_level = fin->elevation_of_mean_sea_level
-     all_forecast_valid_time         = fin->forecast_valid_time
-     all_temperature_at_2m_agl_stdev       = fin->temperature_at_2m_agl_stdev(:,:,:)
-     all_temperature_at_2m_agl_ens000_rmse = fin->temperature_at_2m_agl_ens000_rmse(:,:,:)
-     all_temperature_at_2m_agl_ensALL_rmse = fin->temperature_at_2m_agl_ensALL_rmse(:,:,:)
+     all_time                                 = fin->time
+     all_fx                                   = fin->fx
+     all_elevation_of_mean_sea_level          = fin->elevation_of_mean_sea_level
+     all_forecast_valid_time                  = fin->forecast_valid_time
+     all_wind_speed_at_10m_agl_stdev          = fin->wind_speed_at_10m_agl_stdev(:,:,:)
+     all_wind_speed_at_10m_agl_ens000_rmse    = fin->wind_speed_at_10m_agl_ens000_rmse(:,:,:)
+     all_wine_speed_at_10m_agl_ensALL_rmse    = fin->wind_speed_at_10m_agl_ensALL_rmse(:,:,:)
 
    delete(fin)
 
    nt_all = dimsizes(all_time)
       nt_all@description = "all time steps for all available CIs with Validation"
 
-printVarSummary(all_temperature_at_2m_agl_stdev)
+printVarSummary(all_wind_speed_at_10m_agl_stdev)
 
    ;;;  REALTIME FORECAST ERROR AND VARIANCE verified
 
 
-   recent_data_file = error_directory+"GENS_03_ENSEMBLE__T2M__ERROR__" + scenario + "__" + start_date_string +"_"+ working_hour + "_to_" + end_date_string +"_"+ working_hour + ".nc"
+   recent_data_file = error_directory+"GENS_03_ENSEMBLE__M10__ERROR__" + scenario + "__" + start_date_string +"_"+ working_hour + "_to_" + end_date_string +"_"+ working_hour + ".nc"
 
 
    print(recent_data_file)
    frecent = addfile(recent_data_file, "r")
 
-     recent_time                        = frecent->time
-     recent_fx                          = frecent->fx
-     recent_elevation_of_mean_sea_level = frecent->elevation_of_mean_sea_level
-     recent_forecast_valid_time         = frecent->forecast_valid_time
-     recent_temperature_at_2m_agl_stdev     = frecent->temperature_at_2m_agl_stdev(      :,:,:)
-     recent_temperature_at_2m_agl_ens000_rmse = frecent->temperature_at_2m_agl_ens000_rmse(:,:,:)
-     recent_temperature_at_2m_agl_ensALL_rmse = frecent->temperature_at_2m_agl_ensALL_rmse(:,:,:)
+     recent_time                               = frecent->time
+     recent_fx                                 = frecent->fx
+     recent_elevation_of_mean_sea_level        = frecent->elevation_of_mean_sea_level
+     recent_forecast_valid_time                = frecent->forecast_valid_time
+     recent_wind_speed_at_10m_agl_stdev        = frecent->wind_speed_at_10m_agl_stdev(      :,:,:)
+     recent_wind_speed_at_10m_agl_ens000_rmse  = frecent->wind_speed_at_10m_agl_ens000_rmse(:,:,:)
+     recent_wind_speed_at_10m_agl_ensALL_rmse  = frecent->wind_speed_at_10m_agl_ensALL_rmse(:,:,:)
 
    delete(frecent)
 
@@ -191,7 +189,7 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-   plot_file = graphics_directory+"./GENS_03_TRIANGLE__T2M__" + \
+   plot_file = graphics_directory+"./GENS_03_TRIANGLE__M10__" + \
                  scenario + "__"                   + \
                  start_date_string +"_"+working_hour+ "__to__"        + \
                  end_date_string +"_"+working_hour
@@ -221,11 +219,10 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
          res_single@xyMarkLineMode = "Markers" ; choose which have markers
          res_single@xyMarker       = 16        ; choose type of marker
          res_single@xyMarkerSizeF  = 0.005     ; Marker size (default 0.01)
-         res_single@xyMarkerSizeF  = 0.005     ; Marker size (default 0.01)
          res_single@trXMinF        = 0.0
-         res_single@trXMaxF        = max( (/ all_temperature_at_2m_agl_stdev(:,{desired_max_fx_time},:) /) )
+         res_single@trXMaxF        = max( (/ all_wind_speed_at_10m_agl_stdev(:,{desired_max_fx_time},:) /) )
          res_single@trYMinF        = 0.0
-         res_single@trYMaxF        = max( (/ all_temperature_at_2m_agl_ens000_rmse(:,{desired_max_fx_time},:) /) )
+         res_single@trYMaxF        = max( (/ all_wind_speed_at_10m_agl_ens000_rmse(:,{desired_max_fx_time},:) /) )
          res_single@gsnDraw        = False
          res_single@gsnFrame       = False
 
@@ -235,7 +232,7 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
       ;res_single@tiMainString  = "CI Wedge for "  + end_date_string + "Z"; title
 
       res_single@gsnLeftString  = "Past "+sprinti("F%0.2i",   toint(all_fx({fx_time}))) +" Performance"
-      res_single@gsnRightString = "2-m Air Temperature"
+      res_single@gsnRightString = "10-m WindSp"
 
       res_single@xyMarkerColor = "grey79"   ; Marker color starts with red@2
 
@@ -243,12 +240,12 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
 
       ;;; Plot All Fields.
 
-      printVarSummary(all_temperature_at_2m_agl_stdev(      :,{fx_time},00))
-      printVarSummary(all_temperature_at_2m_agl_ens000_rmse(:,{fx_time},00))
+      printVarSummary(all_wind_speed_at_10m_agl_stdev(      :,{fx_time},00))
+      printVarSummary(all_wind_speed_at_10m_agl_ens000_rmse(:,{fx_time},00))
 
       plot(plotn)  = gsn_csm_xy (wks,                                 \
-                                 all_temperature_at_2m_agl_stdev(      :,{fx_time},00),      \
-                                 all_temperature_at_2m_agl_ens000_rmse(:,{fx_time},00), \
+                                 all_wind_speed_at_10m_agl_stdev(      :,{fx_time},00),      \
+                                 all_wind_speed_at_10m_agl_ens000_rmse(:,{fx_time},00), \
                                  res_single)        ; create plot
 
                           ;
@@ -257,18 +254,18 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
                           ;  Starting at the graphs lower right -> corner
                           ;
 
-      txres                  = True
-         txres@txJust        = "TopLeft"
-         txres@txFontHeightF = 0.02
+    txres               = True
+      txres@txJust        = "TopLeft"
+      txres@txFontHeightF = 0.02
 
-         x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
-         y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
+    x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
+    y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
 
-         text = gsn_add_text(wks,plot(plotn), \
-                                 text_label, \
-                                 res_single@trXMinF + x_ULC, \
-                                 res_single@trYMaxF - y_ULC, \
-                                 txres)
+    text = gsn_add_text(wks,plot(plotn), \
+                        text_label, \
+                        res_single@trXMinF + x_ULC, \
+                        res_single@trYMaxF - y_ULC, \
+                        txres)
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;
@@ -276,13 +273,13 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
       ;     (these are the most current forecsts that have not had time
       ;     to be verified)
 
-      printVarSummary(recent_temperature_at_2m_agl_ens000_rmse)
+      printVarSummary(recent_wind_speed_at_10m_agl_ens000_rmse)
 
-      n_forecast_dates = dimsizes(recent_temperature_at_2m_agl_ens000_rmse(time | :, fx | ifx, elevation_of_screen_height | 0))
+      n_forecast_dates = dimsizes(recent_wind_speed_at_10m_agl_ens000_rmse(time | :, fx | ifx, elevation_of_anemometer_height | 0))
       marklines := new(n_forecast_dates, string)
 
-      ind_no__verification = ind(     ismissing(recent_temperature_at_2m_agl_ens000_rmse( time | :, fx | ifx, elevation_of_screen_height | 0)))
-      ind_yes_verification = ind(.not.ismissing(recent_temperature_at_2m_agl_ens000_rmse( time | :, fx | ifx, elevation_of_screen_height | 0)))
+      ind_no__verification = ind(     ismissing(recent_wind_speed_at_10m_agl_ens000_rmse( time | :, fx | ifx, elevation_of_anemometer_height | 0)))
+      ind_yes_verification = ind(.not.ismissing(recent_wind_speed_at_10m_agl_ens000_rmse( time | :, fx | ifx, elevation_of_anemometer_height | 0)))
 
       printVarSummary(ind_no__verification)
       printVarSummary(ind_yes_verification)
@@ -291,15 +288,15 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
          do i = 0, dimsizes(ind_yes_verification)-1
             marklines(ind_yes_verification(i)) = "Markers"
             print("---- Verification Ready @ " + forecast_product_time_string(ind_yes_verification(i),{fx_time})  \
-                                       +" StDev:" + recent_temperature_at_2m_agl_stdev(ind_yes_verification(i),{fx_time},0) \
-                                       +" RMSE:" + recent_temperature_at_2m_agl_ens000_rmse(ind_yes_verification(i),{fx_time},0)  )
+                                       +" StDev:" + recent_wind_speed_at_10m_agl_stdev(ind_yes_verification(i),{fx_time},0) \
+                                       +" RMSE:" + recent_wind_speed_at_10m_agl_ens000_rmse(ind_yes_verification(i),{fx_time},0)  )
          end do
       end if
       if (.not.ismissing(ind_no__verification(0)))
          do i = 0, dimsizes(ind_no__verification)-1
             marklines(ind_no__verification(i)) = "Lines"
             print("- Awaiting Verification @ " + forecast_product_time_string(ind_no__verification(i),{fx_time}) \
-                                    +" StDev:" + recent_temperature_at_2m_agl_stdev(ind_no__verification(i),{fx_time},0) )
+                                    +" StDev:" + recent_wind_speed_at_10m_agl_stdev(ind_no__verification(i),{fx_time},0) )
          end do
       end if
 
@@ -311,7 +308,6 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
          res_single2@xyMonoMarkerSize = True
          res_single2@xyMonoMarker     = True
          res_single2@xyMarker         = 16        ; choose type of marker
-         res_single2@xyMarkerSizeF    = 0.0075     ; Marker size (default 0.01)
          res_single2@xyMarkerSizeF    = 0.015     ; Marker size (default 0.01)
          res_single2@xyMarkerColors   = line_colours   ; Marker color starts with red@2
 
@@ -319,7 +315,6 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
          res_single2@xyDashPattern    = "SolidLine"
          res_single2@xyLineColors     = line_colours   ; Marker color starts with red@2
          res_single2@xyLineThicknessF =  1.0
-         res_single2@xyLineThicknessF =  1.5
 
 
          res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend.
@@ -337,23 +332,23 @@ printVarSummary(all_temperature_at_2m_agl_stdev)
          res_single2@gsnFrame         = False
 
 
-      plot_data_sdev := (/ recent_temperature_at_2m_agl_stdev(time | :, fx | ifx, elevation_of_screen_height | 0),  \
-                           recent_temperature_at_2m_agl_stdev(time | :, fx | ifx, elevation_of_screen_height | 0)  /)
+      plot_data_sdev := (/ recent_wind_speed_at_10m_agl_stdev(time | :, fx | ifx, elevation_of_anemometer_height | 0),  \
+                           recent_wind_speed_at_10m_agl_stdev(time | :, fx | ifx, elevation_of_anemometer_height | 0)  /)
 
          plot_data_sdev!0                = "ob_node"
          plot_data_sdev&ob_node          = (/ 1,2 /)
          plot_data_sdev!1                = "recent_time"
          plot_data_sdev&recent_time      = recent_time
-         plot_data_sdev@description      = recent_temperature_at_2m_agl_stdev@description
+         plot_data_sdev@description      = recent_wind_speed_at_10m_agl_stdev@description
 
-      plot_data_rmse := (/ recent_temperature_at_2m_agl_ens000_rmse(time | :, fx | ifx, elevation_of_screen_height | 0) ,  \
-                           recent_temperature_at_2m_agl_ens000_rmse(time | :, fx | ifx, elevation_of_screen_height | 0)   /)
+      plot_data_rmse := (/ recent_wind_speed_at_10m_agl_ens000_rmse(time | :, fx | ifx, elevation_of_anemometer_height | 0) ,  \
+                           recent_wind_speed_at_10m_agl_ens000_rmse(time | :, fx | ifx, elevation_of_anemometer_height | 0)   /)
 
          plot_data_rmse!0                = "ob_node"
          plot_data_rmse&ob_node          = (/ 1,2 /)
          plot_data_rmse!1                = "recent_time"
          plot_data_rmse&recent_time      = recent_time
-         plot_data_rmse@description      = recent_temperature_at_2m_agl_ens000_rmse@description
+         plot_data_rmse@description      = recent_wind_speed_at_10m_agl_ens000_rmse@description
 
       plot_data_sdev := plot_data_sdev(recent_time | :, ob_node | : )
       plot_data_rmse := plot_data_rmse(recent_time | :, ob_node | : )
@@ -454,8 +449,8 @@ do fx_time = 1, 4, 1
       fx_hour_for_valid_time(r,fx_time-1) = ind(forecast_valid_time(r,:) .eq. real_world_clock_times(fx_time-1))
       label_strings_for_plots(r,fx_time-1) =  (/ forecast_product_time_string(r,fx_hour_for_valid_time(r,fx_time-1)) /)
 
-      rmse_values_for_line_dots(r) = recent_temperature_at_2m_agl_ens000_rmse(time | r, fx | fx_hour_for_valid_time(r,fx_time-1), elevation_of_screen_height | 0)
-      stdv_values_for_line_dots(r) = recent_temperature_at_2m_agl_stdev(      time | r, fx | fx_hour_for_valid_time(r,fx_time-1), elevation_of_screen_height | 0)
+      rmse_values_for_line_dots(r) = recent_wind_speed_at_10m_agl_ens000_rmse(time | r, fx | fx_hour_for_valid_time(r,fx_time-1), elevation_of_anemometer_height | 0)
+      stdv_values_for_line_dots(r) = recent_wind_speed_at_10m_agl_stdev(      time | r, fx | fx_hour_for_valid_time(r,fx_time-1), elevation_of_anemometer_height | 0)
 
       print("    " + forecast_valid_time_string(r,fx_hour_for_valid_time(r,fx_time-1))  + " "  \
                    + label_strings_for_plots(r,fx_time-1)       \
@@ -474,9 +469,9 @@ do fx_time = 1, 4, 1
       res_single@xyMarker       = 16        ; choose type of marker
       res_single@xyMarkerSizeF  = 0.005     ; Marker size (default 0.01)
       res_single@trXMinF        = 0.0
-      res_single@trXMaxF        = max( (/ all_temperature_at_2m_agl_stdev(:,:,0) /) )
+      res_single@trXMaxF        = max( (/ all_wind_speed_at_10m_agl_stdev(:,:,0) /) )
       res_single@trYMinF        = 0.0
-      res_single@trYMaxF        = max( (/ all_temperature_at_2m_agl_ens000_rmse(:,:,0) /) )
+      res_single@trYMaxF        = max( (/ all_wind_speed_at_10m_agl_ens000_rmse(:,:,0) /) )
       res_single@gsnDraw        = False
       res_single@gsnFrame       = False
 
@@ -487,7 +482,7 @@ do fx_time = 1, 4, 1
    ;res_single@tiMainString  = "CI Wedge for "  + end_date_string + "Z"; title
 
    res_single@gsnLeftString  = "Past "+forecast_valid_time_string(nt_recent-1,fx_time) + " Performance"
-   res_single@gsnRightString = "2-m Air Temp"
+   res_single@gsnRightString = "MSLP"
 
    res_single@xyMarkerColor = "grey79"   ; Marker color starts with red@2
 
@@ -496,8 +491,8 @@ do fx_time = 1, 4, 1
    ;;; Plot All Fields.
 
    plot(plotn)  = gsn_csm_xy (wks,                                 \
-                              ndtooned(all_temperature_at_2m_agl_stdev(      :,{6:84:06},0)),      \
-                              ndtooned(all_temperature_at_2m_agl_ens000_rmse(:,{6:84:06},0)), \
+                              ndtooned(all_wind_speed_at_10m_agl_stdev(      :,{6:84:06},0)),      \
+                              ndtooned(all_wind_speed_at_10m_agl_ens000_rmse(:,{6:84:06},0)), \
                               res_single)        ; create plot
 
                        ;
@@ -506,26 +501,27 @@ do fx_time = 1, 4, 1
                        ;  Starting at the graphs lower right -> corner
                        ;
 
-   txres                  = True
-      txres@txJust        = "TopLeft"
-      txres@txFontHeightF = 0.02
+   txres               = True
+    txres@txJust        = "TopLeft"
+    txres@txFontHeightF = 0.02
 
-      x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
-      y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
+   x_ULC = (res_single@trXMaxF - res_single@trXMinF) * 0.01
+   y_ULC = (res_single@trYMaxF - res_single@trYMinF) * 0.01
 
-      text = gsn_add_text(wks,plot(plotn), \
-                              text_label, \
-                              res_single@trXMinF + x_ULC, \
-                              res_single@trYMaxF - y_ULC, \
-                              txres)
+   text = gsn_add_text(wks,plot(plotn), \
+                       text_label, \
+                       res_single@trXMinF + x_ULC, \
+                       res_single@trYMaxF - y_ULC, \
+                       txres)
+
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;
    ;   Inventory current fields for missing verifcation data
    ;     (these are the most current forecsts that have not had time
-   ;     to be verified
+   ;     to be verified)
 
-   n_forecast_dates = dimsizes(recent_temperature_at_2m_agl_ens000_rmse(time | :, fx | fx_time-1, elevation_of_screen_height | 0))
+   n_forecast_dates = dimsizes(recent_wind_speed_at_10m_agl_ens000_rmse(time | :, fx | fx_time-1, elevation_of_anemometer_height | 0))
 
    marklines := new(n_forecast_dates, string)
 
@@ -559,14 +555,12 @@ do fx_time = 1, 4, 1
       res_single2@xyMonoMarker     = True
       res_single2@xyMarker         = 16        ; choose type of marker
       res_single2@xyMarkerSizeF    = 0.0075     ; Marker size (default 0.01)
-      res_single2@xyMarkerSizeF    = 0.01     ; Marker size (default 0.01)
       res_single2@xyMarkerColors   = line_colours   ; Marker color starts with red@2
 
      ; dptr
       res_single2@xyDashPattern    = "SolidLine"
       res_single2@xyLineColors     = line_colours   ; Marker color starts with red@2
       res_single2@xyLineThicknessF =  1.0
-      res_single2@xyLineThicknessF =  1.2
 
       res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend.
       res_single2@pmLegendOrthogonalPosF = -0.515      ; Move into plot
@@ -590,7 +584,7 @@ do fx_time = 1, 4, 1
       plot_data_sdev&ob_node          = (/ 1,2 /)
       plot_data_sdev!1                = "recent_time"
       plot_data_sdev&recent_time      = recent_time
-      plot_data_sdev@description      = recent_temperature_at_2m_agl_stdev@description
+      plot_data_sdev@description      = recent_wind_speed_at_10m_agl_stdev@description
 
    plot_data_rmse := (/ rmse_values_for_line_dots,  \
                         rmse_values_for_line_dots   /)
@@ -599,7 +593,7 @@ do fx_time = 1, 4, 1
       plot_data_rmse&ob_node          = (/ 1,2 /)
       plot_data_rmse!1                = "recent_time"
       plot_data_rmse&recent_time      = recent_time
-      plot_data_rmse@description      = recent_temperature_at_2m_agl_ens000_rmse@description
+      plot_data_rmse@description      = recent_wind_speed_at_10m_agl_ens000_rmse@description
 
    plot_data_sdev := plot_data_sdev(recent_time | :, ob_node | : )
    plot_data_rmse := plot_data_rmse(recent_time | :, ob_node | : )
@@ -637,8 +631,9 @@ print(n_plot)
 
 delete(wks)
 
-system ("scp " + plot_file + ".000001.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_T2M_triangle_by_FxTime.png")
-system ("scp " + plot_file + ".000002.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_T2M_triangle_by_RealTime.png")
+system ("scp " + plot_file + ".000001.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_M10_triangle_by_FxTime.png")
+system ("scp " + plot_file + ".000002.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_M10_triangle_by_RealTime.png")
+
 
 
 end

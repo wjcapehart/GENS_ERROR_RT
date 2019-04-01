@@ -37,7 +37,19 @@ startdate=( "2015-06-01"
             "2017-12-01"
             "2018-01-01"
             "2018-02-01"
-            "2018-03-01" )
+            "2018-03-01"
+            "2018-04-01"
+            "2018-05-01"
+            "2018-06-01"
+            "2018-07-01"
+            "2018-08-01"
+            "2018-09-01"
+            "2018-10-01"
+            "2018-11-01"
+            "2018-12-01"
+            "2019-01-01"
+            "2019-02-01"
+            "2019-03-01")
 
 eomdate=(   "2015-06-30"
             "2015-07-31"
@@ -72,7 +84,19 @@ eomdate=(   "2015-06-30"
             "2017-12-31"
             "2018-01-31"
             "2018-02-28"
-            "2018-03-31" )
+            "2018-03-31"
+            "2018-04-30"
+            "2018-05-31"
+            "2018-06-30"
+            "2018-07-31"
+            "2018-08-31"
+            "2018-09-30"
+            "2018-10-31"
+            "2018-11-30"
+            "2018-12-31"
+            "2019-01-31"
+            "2019-02-28"
+            "2019-03-31" )
 
 number_of_months=${#startdate[@]}
 
@@ -91,39 +115,33 @@ declare -a VARIABLE_LIST=( T2M
                            GUST
                            APCP )
 
-
-declare -a VARIABLE_LIST=( ISOHGT )
-
-
-declare -a LOCATION_LIST=( WRFRAP
-                           ARMCAR
-                           NAMIBI
-                           UCONUS )
+declare -a VARIABLE_LIST=( M10 )
 
 declare -a LOCATION_LIST=( WRFRAP )
 
-                           for LOCATION in "${LOCATION_LIST[@]}"
-                           do
-                              for VARIABLE in "${VARIABLE_LIST[@]}"
-                              do
-
-for (( i=1; i<${number_of_months}+1; i++ ));
-do
-
-   # producing the CI brackets for this period
-   END_DATE=${eomdate[$i-1]}
-   START_DATE=${startdate[$i-1]}
-
-
-   for WORKING_HOUR in 00
+  for LOCATION in "${LOCATION_LIST[@]}"
+  do
+    
+   for VARIABLE in "${VARIABLE_LIST[@]}"
    do
-      echo ${START_DATE}_${WORKING_HOUR} to ${END_DATE}_${WORKING_HOUR}
 
-         echo "====================================================="
-         echo "ØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØ"
-         echo
+      for (( i=1; i<${number_of_months}+1; i++ ));
+      do
 
-               echo "====================================================="
+         # producing the CI brackets for this period
+         END_DATE=${eomdate[$i-1]}
+         START_DATE=${startdate[$i-1]}
+
+
+         for WORKING_HOUR in 00
+         do
+            echo ${START_DATE}_${WORKING_HOUR} to ${END_DATE}_${WORKING_HOUR}
+
+            echo "====================================================="
+            echo "ØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØ"
+            echo
+
+            echo "====================================================="
             echo
 
             echo $LOCATION $VARIABLE  ${START_DATE}_${WORKING_HOUR}

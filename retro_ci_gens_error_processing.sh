@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # start and end dates for the long run
-LONG_GAME_START_DATE=2017-10-29
-LONG_GAME_END_DATE=2018-03-17
+LONG_GAME_START_DATE=2019-03-10
+LONG_GAME_END_DATE=2019-03-15
 
 # converting these into time in system seconds
 CURRENTDATE_TS=`date --date ${LONG_GAME_START_DATE} '+%s'`
@@ -22,18 +22,20 @@ declare -a VARIABLE_LIST=( ISOHGT
                            SPCH2M
                            U10
                            V10
+                           M10
                            UFLX
                            VFLX
                            FRICV
                            GUST
                            APCP )
 
+
 declare -a LOCATION_LIST=( WRFRAP
                            ARMCAR
                            NAMIBI
                            UCONUS )
 
-
+declare -a LOCATION_LIST=( WRFRAP )
 
 while [ "${CURRENTDATE_TS}" -le "${ENDDATE_TS}" ]
 do
@@ -123,16 +125,114 @@ do
                echo
 
             fi
-         done
+
+
+            if [ ${VARIABLE} == "MSLP"  ] &&  [ ${LOCATION} == "WRFRAP" ]
+            then
+
+               # command-line syntax should read (for example for a fast test case):
+               #  ncl 'FILE_LABEL="MSLP"' 'scenario="WRFRAP"' 'start_date_string="2018-04-10"' 'end_date_string="2017-04-12"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
+
+               echo ncl file_label='"'${VARIABLE}'"' \
+                        scenario='"'${LOCATION}'"' \
+                        start_date_string='"'${START_DATE}'"'   \
+                        end_date_string='"'${END_DATE}'"'       \
+                        working_hour='"'${WORKING_HOUR}'"'       \
+                        script_plot_triangle_product_MSLP.ncl
+
+               echo
+               echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+               echo
+
+               ncl file_label='"'$VARIABLE'"' \
+                   scenario='"'$LOCATION'"' \
+                   start_date_string='"'${START_DATE}'"'   \
+                   end_date_string='"'${END_DATE}'"'       \
+                   working_hour='"'${WORKING_HOUR}'"'       \
+                   script_plot_triangle_product_MSLP.ncl
+
+               echo
+               echo "-----------------------------------------------------"
+               echo
+
+            fi
+
+
+            if [ ${VARIABLE} == "T2M"   ] &&  [  ${LOCATION} == "WRFRAP" ]
+            then
+
+               # command-line syntax should read (for example for a fast test case):
+               #  ncl 'file_label="MSLP"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_ISOHGT.ncl
+
+               echo ncl file_label='"'${VARIABLE}'"' \
+                        scenario='"'${LOCATION}'"' \
+                        start_date_string='"'${START_DATE}'"'   \
+                        end_date_string='"'${END_DATE}'"'       \
+                        working_hour='"'${WORKING_HOUR}'"'       \
+                        script_plot_triangle_product_T2M.ncl
+
+               echo
+               echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+               echo
+
+               ncl file_label='"'$VARIABLE'"' \
+                   scenario='"'$LOCATION'"' \
+                   start_date_string='"'${START_DATE}'"'   \
+                   end_date_string='"'${END_DATE}'"'       \
+                   working_hour='"'${WORKING_HOUR}'"'       \
+                   script_plot_triangle_product_T2M.ncl
+
+               echo
+               echo "-----------------------------------------------------"
+               echo
+
+            fi
+
+            if [ ${VARIABLE} == "M10"   ] &&  [  ${LOCATION} == "WRFRAP" ]
+            then
+
+               # command-line syntax should read (for example for a fast test case):
+               #  ncl 'file_label="MSLP"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_M10.ncl
+
+               echo ncl file_label='"'${VARIABLE}'"' \
+                        scenario='"'${LOCATION}'"' \
+                        start_date_string='"'${START_DATE}'"'   \
+                        end_date_string='"'${END_DATE}'"'       \
+                        working_hour='"'${WORKING_HOUR}'"'       \
+                        script_plot_triangle_product_M10.ncl
+
+               echo
+               echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+               echo
+
+               ncl file_label='"'$VARIABLE'"' \
+                   scenario='"'$LOCATION'"' \
+                   start_date_string='"'${START_DATE}'"'   \
+                   end_date_string='"'${END_DATE}'"'       \
+                   working_hour='"'${WORKING_HOUR}'"'       \
+                   script_plot_triangle_product_M10.ncl
+
+               echo
+               echo "-----------------------------------------------------"
+               echo
+
+            fi
+
+
+          done
+
+
+
+
 
          echo
          echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
          echo
 
-      done
+      done #LOCATION
 
 
-   done
+   done # WORKING_HOUR
 
 
 
@@ -141,4 +241,4 @@ do
    # moving ahead one day and return
    CURRENTDATE_TS=$((${CURRENTDATE_TS}+${OFFSET_DAILY_TS}))
 
-done
+done #WHILE time loop
