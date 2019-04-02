@@ -61,7 +61,7 @@ begin
    ; Create Input File File with all available verified forecasts
    ;
 
-   all_data_file = archive_directory + "gens_03_ensemble__ISOHGT__error__" + scenario + "__2015-08-01_to_2017-10-31.nc"
+   all_data_file = archive_directory + "gens_03_ensemble__ISOHGT__error__" + scenario + "__2015-06-01_00_to_2019-03-31_00.nc"
 
    ; pretend file for now that has the last 10 VERIFIED forecasts
    recent_data_file = all_data_file
@@ -324,7 +324,7 @@ begin
 <<<<<<< HEAD
          res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend.
 =======
-         res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend. 
+         res_single2@pmLegendDisplayMode    = "Always"   ; Display a legend.
 >>>>>>> 6329c7447f1c7f9ffff0ffbd81b3bd970a399ebb
          res_single2@pmLegendSide           = "Top"
          res_single2@pmLegendOrthogonalPosF = -0.4      ; Move into plot

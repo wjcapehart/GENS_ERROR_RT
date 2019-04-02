@@ -61,7 +61,7 @@ begin
    ; Create Input File File with all available verified forecasts
    ;
 
-   all_data_file = archive_directory + "gens_03_ensemble__M10__ERROR__" + scenario + "__2015-06-01_00_to_2018-03-31_00.nc"
+   all_data_file = archive_directory + "gens_03_ensemble__M10__ERROR__" + scenario + "__2015-06-01_00_to_2019-03-31_00.nc"
 
    ; pretend file for now that has the last 10 VERIFIED forecasts
    recent_data_file = all_data_file

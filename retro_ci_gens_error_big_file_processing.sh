@@ -1,8 +1,8 @@
 #!/bin/bash
 source ~wjc/.bash_profile
 # start and end dates for the long run
-LONG_GAME_START_DATE=2017-10-29
-LONG_GAME_END_DATE=2018-03-17
+LONG_GAME_START_DATE=2015-06-01
+LONG_GAME_END_DATE  =2019-03-31
 
 startdate=( "2015-06-01"
             "2015-07-01"
@@ -104,9 +104,10 @@ echo Number of Months ${number_of_months}
 
 
 declare -a VARIABLE_LIST=( T2M
-                           ISOHGT
+                           M10
                            MSLP
                            SPCH2M
+                           ISOHGT
                            U10
                            V10
                            UFLX
@@ -115,13 +116,12 @@ declare -a VARIABLE_LIST=( T2M
                            GUST
                            APCP )
 
-declare -a VARIABLE_LIST=( M10 )
 
 declare -a LOCATION_LIST=( WRFRAP )
 
   for LOCATION in "${LOCATION_LIST[@]}"
   do
-    
+
    for VARIABLE in "${VARIABLE_LIST[@]}"
    do
 
@@ -182,15 +182,16 @@ declare -a LOCATION_LIST=( WRFRAP )
             echo
             echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
             echo
+         done  # working hours
 
-         done
+      done # month
+      echo
+      echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+      echo
+      echo ncrcat  /projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/GENS_03_ENSEMBLE__${VARIABLE}__ERROR__${LOCATION}__* /projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/gens_03_ensemble__${VARIABLE}__error__${LOCATION}__${LONG_GAME_START_DATE}_to_${LONG_GAME_END_DATE}.nc
+           ncrcat  /projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/GENS_03_ENSEMBLE__${VARIABLE}__ERROR__${LOCATION}__* /projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/gens_03_ensemble__${VARIABLE}__error__${LOCATION}__${LONG_GAME_START_DATE}_to_${LONG_GAME_END_DATE}.nc
+           #rm -frv /projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/GENS_03_ENSEMBLE__${VARIABLE}__ERROR__${LOCATION}__*
 
-      done
+   done # variable
 
-   done
-
-
-
-
-
-done
+ done # location

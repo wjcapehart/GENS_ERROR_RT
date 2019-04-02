@@ -11,12 +11,12 @@ output: html_notebook
 
   library(package = "tidyverse")
   library(package = "lubridate")
-  
+
   library(package = "ncdf4")
   library(package = "ncdf4.helpers")
-  
+
   library(package = "PCICt")
-  
+
   library(package = "reshape2")
 
 ```
@@ -36,9 +36,9 @@ output: html_notebook
 # assessed variable
 
   variable          = "T2M"
-  
+
   variable_name     = "2-m Air Temperature"
-  
+
   varid_stdev       = "temperature_at_2m_agl_stdev"
   varid_ens000_rmse = "temperature_at_2m_agl_ens000_rmse"
   varid_ensALL_rmse = "temperature_at_2m_agl_ensALL_rmse"
@@ -51,7 +51,7 @@ output: html_notebook
 # target region
 
   region      = "WRFRAP"
-  
+
   region_name = "Northern Great Plains Region"
 
 ```
@@ -81,8 +81,8 @@ output: html_notebook
                            "2016-01-01_00_to_2018-03-31_00" ,
                            ".nc"                            ,
                            sep = "")
-  
-  
+
+
   short_scale_file = paste(directory            ,
                            "error_data/"        ,
                            "GENS_03_ENSEMBLE__" ,
@@ -104,35 +104,35 @@ output: html_notebook
 # Extract Long CI Triangle Data
 
   nc.long     = nc_open(file = long_scale_file)
-  
-  long.time   = nc.get.time.series(f =     nc.long, 
+
+  long.time   = nc.get.time.series(f =     nc.long,
                                    v = varid_stdev)
-  
+
   long.time   = as.POSIXct(x  = long.time,
                            tz =     "UTC")
-  
+
   long.stdev  = ncvar_get(nc    =     nc.long,
                           varid = varid_stdev)
-  
+
   long.rmse0  = ncvar_get(nc    =           nc.long,
                           varid = varid_ens000_rmse)
-  
+
   long.rmseA  = ncvar_get(nc    =           nc.long,
                           varid = varid_ensALL_rmse)
-  
+
   # transpose the arrays to match C-order look and feel
-  
+
   long.stdev = t(long.stdev)
   long.rmse0 = t(long.rmse0)
   long.rmseA = t(long.rmseA)
-  
+
 
   nc_close(nc.long)
-  
+
   remove(long_scale_file)
   remove(nc.long)
 
-  
+
 ```
 
 
@@ -141,41 +141,41 @@ output: html_notebook
 # Extract Long CI Triangle Data
 
   nc.short      = nc_open(file = short_scale_file)
-  
-  short.time    = nc.get.time.series(f =    nc.short, 
+
+  short.time    = nc.get.time.series(f =    nc.short,
                                      v = varid_stdev)
-  
+
   short.time    = as.POSIXct(x  = short.time,
                              tz =      "UTC")
-   
+
   short.stdev   = ncvar_get(nc    =    nc.short,
                             varid = varid_stdev)
-  
+
   short.rmse0   = ncvar_get(nc    =          nc.short,
                             varid = varid_ens000_rmse)
-  
+
   short.rmseA   = ncvar_get(nc    =          nc.short,
                             varid = varid_ensALL_rmse)
-  
+
   # transpose the arrays to match C-order look and feel
-  
+
   short.stdev = t(short.stdev)
   short.rmse0 = t(short.rmse0)
   short.rmseA = t(short.rmseA)
-  
-  
+
+
   forecast_hour = ncvar_get(nc    = nc.short,
                             varid =     "fx")
-  
+
   nc_close(nc.short)
-  
+
   remove(short_scale_file)
   remove(nc.short)
   remove(varid_stdev)
   remove(varid_ens000_rmse)
   remove(varid_ensALL_rmse)
 
-  
+
 ```
 
 
@@ -189,40 +189,40 @@ output: html_notebook
                                 forecast_hour = forecast_hour)
 
   # convert to frame
-  
+
   long.stdev = as.data.frame.table(long.stdev)
   long.rmseA = as.data.frame.table(long.rmseA)
   long.rmse0 = as.data.frame.table(long.rmse0)
-  
-  
+
+
   long.triangle = long.stdev  
   names(long.triangle)[1] = "FxTime"
   names(long.triangle)[2] =   "FxHr"
   names(long.triangle)[3] =  "StDev"
-  
+
   long.triangle$RMSE_0 = long.rmse0$Freq
   long.triangle$RMSE_A = long.rmseA$Freq
-  
+
 
   unique_Time          = levels(long.triangle$FxTime)
-  
+
   long.triangle$FxTime = unique_Time[as.numeric(long.triangle$FxTime)]  
-  
+
   long.triangle$FxTime = as.numeric(long.triangle$FxTime)
-  
-  
+
+
   unique_Fx         = levels(long.triangle$FxHr)
-  
+
   long.triangle$FxHr = as.numeric(unique_Fx[as.numeric(long.triangle$FxHr)])
-  
+
   long.triangle$ValTime = long.triangle$FxHr   * 3600.0 +
                           long.triangle$FxTime
 
-  
+
   long.triangle$FxTime = as.POSIXct(x      =    long.triangle$FxTime,
                                     origin = "1970-01-01 00:00:00",
                                     tz     =                 "UTC")
-  
+
   long.triangle$ValTime = as.POSIXct(x      =    long.triangle$ValTime,
                                      origin =    "1970-01-01 00:00:00",
                                      tz     =                    "UTC")
@@ -230,16 +230,16 @@ output: html_notebook
   long.triangle$FxHr = sprintf(           "F%02d",
                                long.triangle$FxHr)
   long.triangle = long.triangle[,c(1,6,2,3,4,5)]
-  
+
   remove(long.stdev)
   remove(long.rmse0)
   remove(long.rmseA)
-  
+
   remove(long.time)
   remove(unique_Time)
   remove(unique_Fx)
 
-    
+
 ```
 
 
@@ -254,40 +254,40 @@ output: html_notebook
                                 forecast_hour = forecast_hour)
 
   # convert to frame
-  
+
   short.stdev = as.data.frame.table(short.stdev)
   short.rmseA = as.data.frame.table(short.rmseA)
   short.rmse0 = as.data.frame.table(short.rmse0)
-  
-  
+
+
   short.triangle = short.stdev  
   names(short.triangle)[1] = "FxTime"
   names(short.triangle)[2] =   "FxHr"
   names(short.triangle)[3] =  "StDev"
-  
+
   short.triangle$RMSE_0 = short.rmse0$Freq
   short.triangle$RMSE_A = short.rmseA$Freq
-  
+
 
   unique_Time          = levels(short.triangle$FxTime)
-  
+
   short.triangle$FxTime = unique_Time[as.numeric(short.triangle$FxTime)]  
-  
+
   short.triangle$FxTime = as.numeric(short.triangle$FxTime)
-  
-  
+
+
   unique_Fx         = levels(short.triangle$FxHr)
-  
+
   short.triangle$FxHr = as.numeric(unique_Fx[as.numeric(short.triangle$FxHr)])
-  
+
   short.triangle$ValTime = short.triangle$FxHr   * 3600.0 +
                           short.triangle$FxTime
 
-  
+
   short.triangle$FxTime = as.POSIXct(x      =    short.triangle$FxTime,
                                     origin = "1970-01-01 00:00:00",
                                     tz     =                 "UTC")
-  
+
   short.triangle$ValTime = as.POSIXct(x      =    short.triangle$ValTime,
                                      origin =    "1970-01-01 00:00:00",
                                      tz     =                    "UTC")
@@ -295,16 +295,16 @@ output: html_notebook
   short.triangle$FxHr = sprintf(           "F%02d",
                                short.triangle$FxHr)
   short.triangle = short.triangle[,c(1,6,2,3,4,5)]
-  
+
   remove(short.stdev)
   remove(short.rmse0)
   remove(short.rmseA)
-  
+
   remove(short.time)
   remove(unique_Time)
   remove(unique_Fx)
 
-    
+
 ```
 
 
@@ -318,40 +318,39 @@ output: html_notebook
                                          (FxHr == "F12") |
                                          (FxHr == "F18") |
                                          (FxHr == "F24") )
-  
+
   short.triangle.06.24 = subset(x      =  short.triangle ,
                                 subset = (FxHr == "F06") |
                                          (FxHr == "F12") |
                                          (FxHr == "F18") |
                                          (FxHr == "F24") )
-  
+
   short.triangle.06.24 = subset(x      =  short.triangle.06.24 ,
                                 subset =        (RMSE_0 > 0.0) )
- 
+
   ggplot(data = long.triangle.06.24)                       +
-  
+
     aes(x     =  StDev,
         y     = RMSE_0)                                    +
-  
+
     theme_bw()                                             +
-   
+
     facet_wrap(~ FxHr)                                     +
-  
+
     geom_point(alpha =    0.1,
                color = "gray")                             +
-    
+
     geom_point(data  = short.triangle.06.24,
                aes(x     =  StDev,
                    y     = RMSE_0,
                    color = factor(FxTime)))               +
-    
+
     labs(colour="Forecast Time") +
-  
-    xlab(label = "Ensemble Standard Deviation")            + 
-    ylab(label = "Control Member Root Mean Squared Error") + 
+
+    xlab(label = "Ensemble Standard Deviation")            +
+    ylab(label = "Control Member Root Mean Squared Error") +
     ggtitle(label = paste("GEFS Forecast Confidence for",
                           variable_name,
                           sep=" "),
             subtitle = region_name)
 ```
-
