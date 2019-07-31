@@ -1,0 +1,321 @@
+---
+title: "CI Extended Triangtle Analysis"
+output: html_notebook
+---
+
+
+
+```{r}
+
+  library(package = "tidyverse")
+  library(package = "lubridate")
+
+  library(package = "rlist")
+  
+  library(package = "ncdf4")
+  library(package = "ncdf4.helpers")
+  
+  library(package = "PCICt")
+  
+  library(package = "reshape2")
+```
+
+
+
+
+```{r}
+
+# directory/URL root
+
+  directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
+
+  time_range = "2015-06-01_00_to_2019-03-31_00"
+  
+  parameters = c("T2M",
+                 "MSLP",
+                 "M10",
+                 "SPCH2M",
+                 "ISOHGT",
+                 "U10",
+                 "V10",
+                 "FRICV",
+                 "GUST")
+  
+  var_name = c("temperature_at_2m_agl",
+               "mean_sea_level_pressure",
+               "wind_speed_at_10m_agl",
+               "specific_humidity_at_2m_agl",
+               "isobaric_height",
+               "eastward_wind_speed_at_10m_agl",
+               "westward_wind_speed_at_10m_agl",
+               "frictional_velocity_at_surface",
+               "wind_gust_at_10m_agl") 
+  
+    
+  varid_stdev       = str_c(var_name,
+                            "_",
+                            "stdev",
+                            sep="")
+  varid_ens000_rmse = str_c(var_name,
+                            "_",
+                            "ens000_rmse",
+                            sep="")
+
+  
+  varid_ensALL_rmse = str_c(var_name,
+                            "_",
+                            "ensALL_rmse",
+                            sep="")
+
+  
+  region      = "WRFRAP"
+  
+  region_name = "Northern Great Plains Region"
+  
+  remove(var_name)
+
+
+```
+
+
+```{r}
+
+# File name control
+
+CI_Ensemble_Stats = data.frame()
+
+working_names = c("Height",
+                  "Fx_Hour",
+                  "Time")
+
+for (variable in parameters) {
+  
+  v = which(parameters == variable)
+
+  long_scale_file  = str_c(directory,
+                           "gens_03_ensemble__",
+                           variable,
+                           "__error__",
+                           region,
+                           "__",
+                           time_range,
+                           ".nc",
+                           sep = "")
+  
+  print(long_scale_file)
+
+  nc.long     = nc_open(file = long_scale_file)
+  
+  longitude = ncvar_get(nc             = nc.long,
+                        varid          = "lon",
+                        collapse_degen = FALSE)
+  
+  latitude  = ncvar_get(nc             = nc.long,
+                        varid          = "lat",
+                        collapse_degen = FALSE)
+
+  ##### Ensemble Standard Deviation
+  {
+        print(varid_stdev[v])
+
+    dim.names = nc.get.dim.names(f = nc.long,
+                                 v = varid_stdev[v])
+    print(dim.names)
+    
+    stdev_input = ncvar_get(nc             = nc.long,
+                            varid          = varid_stdev[v],
+                            collapse_degen = FALSE)
+    
+    coords = list()
+
+    for (dim in dim.names)
+    {
+      dim_input = ncvar_get(nc    = nc.long,
+                            varid = dim)
+      
+      coords = list.append(coords,
+                           dim_input)
+    }
+
+    names(coords) = working_names
+    
+    dimnames(stdev_input) = list(Height  = coords$Height,
+                                 Fx_Hour = coords$Fx_Hour,
+                                 Time    = coords$Time)
+    
+    local_frame =  melt(data        = stdev_input,    # your array
+                        na.rm       = TRUE,           # don't use missing values
+                        varnames    = working_names,  # names of your dimensions
+                        value.name  = "Ens_StDev")    # the final name of your aray value
+    
+    local_frame$Variable  = variable 
+    
+    local_frame = local_frame[c("Time", 
+                                "Fx_Hour", 
+                                "Variable",
+                                "Height", 
+                                "Ens_StDev")]
+
+    remove(coords)
+    remove(dim)
+    remove(dim_input)
+    remove(dim.names)
+    remove(stdev_input)
+    
+  }
+
+  ##### RMSE For Ensemble 000 
+  {
+    print(varid_ens000_rmse[v])
+    dim.names = nc.get.dim.names(f = nc.long,
+                                 v = varid_ens000_rmse[v])
+    
+    rmse0_input = ncvar_get(nc             = nc.long,
+                            varid          = varid_ens000_rmse[v],
+                            collapse_degen = FALSE)
+    
+    coords = list()
+
+    for (dim in dim.names)
+    {
+      dim_input = ncvar_get(nc    = nc.long,
+                            varid = dim)
+      
+      coords = list.append(coords,
+                           dim_input)
+    }
+    
+    working_names = c("Height",
+                      "Fx_Hour",
+                      "Time")
+    
+    names(coords) = working_names
+    
+    dimnames(rmse0_input) = list(Height  = coords$Height,
+                                 Fx_Hour = coords$Fx_Hour,
+                                 Time    = coords$Time)
+    
+    rmse0 =  melt(data        = rmse0_input,   # your array
+                   na.rm      = TRUE,          # don't use missing values
+                   varnames   = working_names, # names of your dimensions
+                   value.name = "RMSE_Ens000") # the final name of your aray value
+    
+    rmse0$Variable    = variable 
+    rmse0$RMSE_Ens000 = rmse0$RMSE_Ens000
+    
+    local_frame = full_join(x  = local_frame,
+                            y  = rmse0,
+                            by = c("Time", 
+                                   "Fx_Hour", 
+                                   "Variable", 
+                                   "Height"))
+    
+    
+    
+    remove(coords)
+    remove(dim)
+    remove(dim_input)
+    remove(dim.names)
+    remove(rmse0_input)
+    remove(rmse0)
+  }
+    
+  ##### RMSE For All Members Ensemble 
+  {
+            print(varid_ensALL_rmse[v])
+
+    dim.names = nc.get.dim.names(f = nc.long,
+                                 v = varid_ensALL_rmse[v])
+    
+    rmse0_input = ncvar_get(nc             = nc.long,
+                            varid          = varid_ensALL_rmse[v],
+                            collapse_degen = FALSE)
+    
+    coords = list()
+
+    for (dim in dim.names)
+    {
+      dim_input = ncvar_get(nc    = nc.long,
+                            varid = dim)
+      
+      coords = list.append(coords,
+                           dim_input)
+    }
+    
+    working_names = c("Height",
+                      "Fx_Hour",
+                      "Time")
+    
+    names(coords) = working_names
+    
+    dimnames(rmse0_input) = list(Height  = coords$Height,
+                                 Fx_Hour = coords$Fx_Hour,
+                                 Time    = coords$Time)
+    
+    rmse0 =  melt(data        = rmse0_input,   # your array
+                   na.rm      = TRUE,          # don't use missing values
+                   varnames   = working_names, # names of your dimensions
+                   value.name = "RMSE_EnsAll") # the final name of your aray value
+    
+    rmse0$Variable    = variable 
+    rmse0$RMSE_EnsAll = rmse0$RMSE_EnsAll
+    
+        
+    local_frame = full_join(x  = local_frame,
+                            y  = rmse0,
+                            by = c("Time", 
+                                   "Fx_Hour", 
+                                   "Variable", 
+                                   "Height"))
+    
+    remove(coords)
+    remove(dim)
+    remove(dim_input)
+    remove(dim.names)
+    remove(rmse0_input)
+    remove(rmse0)
+  }  
+  
+  CI_Ensemble_Stats = rbind(CI_Ensemble_Stats,
+                            local_frame)
+
+  nc_close(nc = nc.long)
+  
+  remove(v)
+  remove(nc.long)
+  remove(long_scale_file)
+  remove(local_frame)
+  
+}
+
+CI_Ensemble_Stats$Time = as.POSIXct(x      = CI_Ensemble_Stats$Time*3600,
+                                    origin = "2016-01-01 00:00:00 UTC",
+                                    tz     = "UTC")
+
+
+
+RdataFile = str_c(directory,
+                  "gens_03_ensemble__",
+                  str_c(parameters,
+                        collapse="_"),
+                  "__error__",
+                  region,
+                  "__",
+                  time_range,
+                  ".RData",
+                  sep = "")
+
+save(region,
+     region_name,
+     longitude,
+     latitude,
+     CI_Ensemble_Stats,
+     file =RdataFile)
+
+remove(varid_ens000_rmse)
+remove(varid_ensALL_rmse)
+remove(varid_stdev)
+remove(parameters)
+remove(working_names)
+remove(variable)
+```

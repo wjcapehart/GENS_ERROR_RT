@@ -1,5 +1,5 @@
 #/bin/tcsh
-
+source /usr/local/exelis/idl85/bin/idl_setup
 ulimit -f unlimited
 
 set VARIABLE_LIST = ( ISOHGT MSLP T2M SPCH2M U10 V10 M10 UFLX VFLX FRICV GUST APCP )

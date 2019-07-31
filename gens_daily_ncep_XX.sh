@@ -1,77 +1,65 @@
 #!/bin/bash
 
-CURRENTDATE_TS=`date --utc +%s`
+. /home/bash_profile_ias
+. /usr/local/exelis/idl85/bin/idl_setup.bash
 
-WORKING_HOUR=00
+idl=/usr/local/exelis/idl85/bin/idl
+ncl=/usr/local/bin/ncl
 
-# Offset for Daily Time Step
-OFFSET_DAILY_TS=86400
-
-# Offset for CI Time Range
-OFFSET_CI_TS=$((-2*${OFFSET_DAILY_TS}))
-
-declare -a VARIABLE_LIST=( ISOHGT
-                           MSLP
-                           T2M
-                           SPCH2M
-                           U10
-                           V10
-                           M10
-                           UFLX
-                           VFLX
-                           FRICV
-                           GUST
-                           APCP )
-
-declare -a LOCATION_LIST=( WRFRAP
-                           ARMCAR
-                           NAMIBI
-                           UCONUS )
+which idl
 
 
-# Retrieve files from NCEP NOMADS servers with IDL script below
+ulimit -f unlimited
+
+VARIABLE_LIST=( ISOHGT MSLP T2M SPCH2M U10 V10 M10 UFLX VFLX FRICV GUST APCP )
+
+LOCATION_LIST=(WRFRAP ARMCAR NAMIBI  UCONUS)
+
+HH=00
+
+
+START_DATE=`date --utc -d "2 day ago" '+%Y-%m-%d'`
+END_DATE=`date   --utc -d "0 day ago" '+%Y-%m-%d'`
+
+echo ${START_DATE}
+echo ${END_DATE}
+
 cd /data/NCAR/GENS
 
-/usr/local/bin/idl   << endidl
-.run /data/NCAR/GENS/gens_daily_ncep_${WORKING_HOUR}.pro
-endidl
 
-# begin post processing of the NCEP GENS data
+$idl   << endidl
+.run /data/NCAR/GENS/gens_daily_ncep_${HH}.pro
+endidl
 
 cd /projects/BIG_WEATHER/GENS_ERROR_RT
 
-   # producing the CI brackets for this period
 
-   END_DATE=`date --utc --date=@${CURRENTDATE_TS} "+%Y-%m-%d"`
-   START_DATE=`date  --utc --date=@$((${CURRENTDATE_TS}+${OFFSET_CI_TS})) "+%Y-%m-%d"`
+for LOCATION in $LOCATION_LIST;
+do
+   echo "====================================================="
+   echo "ØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØ"
+   echo
 
-   echo ${START_DATE}_${WORKING_HOUR} to ${END_DATE}_${WORKING_HOUR}
-
-   for LOCATION in "${LOCATION_LIST[@]}"
+   for VARIABLE in $VARIABLE_LIST;
    do
-      echo "====================================================="
-      echo "ØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØ"
-      echo
 
-      for VARIABLE in "${VARIABLE_LIST[@]}"
-      do
          echo "====================================================="
          echo
 
-         echo $LOCATION $VARIABLE  ${START_DATE}_${WORKING_HOUR}
+         echo $LOCATION $VARIABLE  ${START_DATE}_${HH}
 
          echo
          echo "-----------------------------------------------------"
          echo
 
          # command-line syntax should read (for example for a fast test case):
-         #  ncl 'FILE_LABEL="T2M"' 'scenario="WRFRAP"' 'start_date_string="2016-01-01"' 'end_date_string="2016-01-10"'  script_T2M_read_ensembles_from_thredds.ncl
+         #  ncl 'file_label="T2M"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'  script_T2M_read_ensembles_from_thredds.ncl
 
          echo ncl file_label='"'${VARIABLE}'"' \
                   scenario='"'${LOCATION}'"' \
                   start_date_string='"'$START_DATE'"'   \
                   end_date_string='"'${END_DATE}'"'       \
-                  working_hour='"'${WORKING_HOUR}'"'       \
+                  working_hour='"'$HH'"'       \
                   script_${VARIABLE}_read_ensembles_from_thredds.ncl
 
          echo
@@ -79,11 +67,11 @@ cd /projects/BIG_WEATHER/GENS_ERROR_RT
          echo
 
 
-         ncl file_label='"'$VARIABLE'"' \
+         $ncl file_label='"'$VARIABLE'"' \
              scenario='"'$LOCATION'"' \
              start_date_string='"'$START_DATE'"'   \
              end_date_string='"'${END_DATE}'"'       \
-             working_hour='"'${WORKING_HOUR}'"'       \
+             working_hour='"'$HH'"'       \
              script_${VARIABLE}_read_ensembles_from_thredds.ncl
 
          echo
@@ -91,41 +79,141 @@ cd /projects/BIG_WEATHER/GENS_ERROR_RT
          echo
 
 
-         if [ ${VARIABLE} == ISOHGT  ] && [ ${LOCATION} == WRFRAP ]
-         then
+         if [[ ${VARIABLE} == "ISOHGT" ]]   && [[ ${LOCATION} == "WRFRAP" ]]; then
+
 
             # command-line syntax should read (for example for a fast test case):
-            #  ncl 'FILE_LABEL="ISOHGT"' 'scenario="WRFRAP"' 'start_date_string="2017-03-15"' 'end_date_string="2017-03-17"' 'working_hour="12"' script_plot_triangle_product_ISOHGT.ncl
+            #  ncl 'file_label="ISOHGT"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_ISOHGT.ncl
 
             echo ncl file_label='"'${VARIABLE}'"' \
                      scenario='"'${LOCATION}'"' \
                      start_date_string='"'${START_DATE}'"'   \
                      end_date_string='"'${END_DATE}'"'       \
-                     working_hour='"'${WORKING_HOUR}'"'       \
+                     working_hour='"'$HH'"'       \
                      script_plot_triangle_product_ISOHGT.ncl
 
             echo
             echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
             echo
 
-            ncl file_label='"'$VARIABLE'"' \
+
+            $ncl file_label='"'$VARIABLE'"' \
                 scenario='"'$LOCATION'"' \
                 start_date_string='"'${START_DATE}'"'   \
                 end_date_string='"'${END_DATE}'"'       \
-                working_hour='"'${WORKING_HOUR}'"'       \
+                working_hour='"'$HH'"'       \
                 script_plot_triangle_product_ISOHGT.ncl
 
             echo
             echo "-----------------------------------------------------"
             echo
 
-         fi
-      done
 
-      echo
-      echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
-      echo
+         fi
+
+
+
+         if [[ ${VARIABLE} == "MSLP" ]]   && [[ ${LOCATION} == "WRFRAP" ]]; then
+
+            # command-line syntax should read (for example for a fast test case):
+            #  ncl 'file_label="MSLP"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_ISOHGT.ncl
+
+            echo ncl file_label='"'${VARIABLE}'"' \
+                     scenario='"'${LOCATION}'"' \
+                     start_date_string='"'${START_DATE}'"'   \
+                     end_date_string='"'${END_DATE}'"'       \
+                     working_hour='"'$HH'"'       \
+                     script_plot_triangle_product_MSLP.ncl
+
+            echo
+            echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+            echo
+
+            $ncl file_label='"'$VARIABLE'"' \
+                scenario='"'$LOCATION'"' \
+                start_date_string='"'${START_DATE}'"'   \
+                end_date_string='"'${END_DATE}'"'       \
+                working_hour='"'$HH'"'       \
+                script_plot_triangle_product_MSLP.ncl
+
+            echo
+            echo "-----------------------------------------------------"
+            echo
+
+         fi
+
+
+
+
+        if [[ ${VARIABLE} == "T2M" ]]  && [[ ${LOCATION} == "WRFRAP" ]]; then
+
+           # command-line syntax should read (for example for a fast test case):
+           #  ncl 'file_label="MSLP"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_ISOHGT.ncl
+
+           echo ncl file_label='"'${VARIABLE}'"' \
+                    scenario='"'${LOCATION}'"' \
+                    start_date_string='"'${START_DATE}'"'   \
+                    end_date_string='"'${END_DATE}'"'       \
+                    working_hour='"'$HH'"'       \
+                    script_plot_triangle_product_T2M.ncl
+
+           echo
+           echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+           echo
+
+           $ncl file_label='"'$VARIABLE'"' \
+               scenario='"'$LOCATION'"' \
+               start_date_string='"'${START_DATE}'"'   \
+               end_date_string='"'${END_DATE}'"'       \
+               working_hour='"'$HH'"'       \
+               script_plot_triangle_product_T2M.ncl
+
+           echo
+           echo "-----------------------------------------------------"
+           echo
+
+        fi
+
+
+        if [[ ${VARIABLE} == "M10" ]]  && [[ ${LOCATION} == "WRFRAP" ]]; then
+
+           # command-line syntax should read (for example for a fast test case):
+           #  ncl 'file_label="MSLP"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'   script_plot_triangle_product_M10.ncl
+
+           echo ncl file_label='"'${VARIABLE}'"' \
+                    scenario='"'${LOCATION}'"' \
+                    start_date_string='"'${START_DATE}'"'   \
+                    end_date_string='"'${END_DATE}'"'       \
+                    working_hour='"'$HH'"'       \
+                    script_plot_triangle_product_M10.ncl
+
+           echo
+           echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+           echo
+
+           $ncl file_label='"'$VARIABLE'"' \
+               scenario='"'$LOCATION'"' \
+               start_date_string='"'${START_DATE}'"'   \
+               end_date_string='"'${END_DATE}'"'       \
+               working_hour='"'$HH'"'       \
+               script_plot_triangle_product_M10.ncl
+
+           echo
+           echo "-----------------------------------------------------"
+           echo
+
+        fi
+
 
    done
 
-echo Outahere like Vladimir
+
+
+
+
+   echo
+   echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
+   echo
+
+
+done

@@ -1,0 +1,712 @@
+---
+title: "CI Extended Triangle Analysis"
+output: html_notebook
+---
+
+# 1. Libraries
+
+```{r}
+
+  library(package = "tidyverse")
+  library(package = "lubridate")
+
+  library(package = "rlist")
+  
+  library(package = "ncdf4")
+  library(package = "ncdf4.helpers")
+  
+  library(package = "PCICt")
+  
+  library(package = "reshape2")
+```
+
+# 2. Input and Prepare Data 
+
+```{r}
+
+# directory/URL root
+
+  directory = "/projects/BIG_WEATHER/GENS_ERROR_RT/triangle_archives/"
+  directory = "http://kyrill.ias.sdsmt.edu:8080/thredds/fileServer/BWW_GENS/CI_STAT/"
+
+  time_range = "2015-06-01_00_to_2019-03-31_00"
+  
+  region = "WRFRAP"
+  
+  RdataFile = str_c(directory,
+                  "gens_03_ensemble__",
+                  "T2M_MSLP_M10_SPCH2M_ISOHGT_U10_V10_FRICV_GUST",
+                  "__error__",
+                  region,
+                  "__",
+                  time_range,
+                  ".RData",
+                  sep = "")
+
+  load(file = url(RdataFile)) 
+  
+  Time     = unique(CI_Ensemble_Stats$Time)
+  Fx_Hour  = unique(CI_Ensemble_Stats$Fx_Hour)
+  Variable = unique(CI_Ensemble_Stats$Variable)
+  Height   = unique(CI_Ensemble_Stats$Height)
+  
+  CI_Ensemble_Stats$Month   = month(CI_Ensemble_Stats$Time)
+
+  CI_Ensemble_Stats = CI_Ensemble_Stats %>% 
+    mutate(Quarter = case_when(((Month == 12) | (Month == 01) | (Month == 02))  
+                               ~ "DJF",
+                               ((Month == 03) | (Month == 04) | (Month == 05))
+                               ~ "MAM",
+                               ((Month == 06) | (Month == 07) | (Month == 08))
+                               ~ "JJA",
+                               ((Month == 09) | (Month == 10) | (Month == 11))
+                               ~ "SON") )
+  
+  CI_Ensemble_Stats$Quarter = factor(x      = CI_Ensemble_Stats$Quarter,
+                                     levels = c("DJF", "MAM", "JJA", "SON"))
+  
+  
+
+  CI_Ensemble_Stats$Month = factor(x      = format((CI_Ensemble_Stats$Time),"%b"),
+                                   levels = c("Jan","Feb","Mar","Apr","May","Jun",
+                                              "Jul","Aug","Sep","Oct","Nov","Dec"))
+  
+  
+```
+
+# 3. Triangle Plots
+
+## 3.a 2-m Air Temperature
+
+```{r}
+
+  Var     = "T2M"
+  Varname = "2-m Air Temperature"
+  Hgt     = 2
+  Fx      = 24
+  
+  
+```
+
+### 3.a.1 2-m Air Temperature by Quarter
+
+```{r}
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Quarter)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Quarter) + 
+      
+      facet_wrap(facets = ~ Quarter) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            ) +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") +
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+      
+      scale_colour_manual(values=c("DJF" = "cyan",
+                                   "MAM" = "green",
+                                   "JJA" = "magenta",
+                                   "SON" = "orange"),
+                        guide =FALSE) +
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+### 3.a.2 2-m Air Temperature by Month
+
+```{r}
+
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Month)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Month) + 
+      
+      facet_wrap(facets = ~ Month) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            legend.position = "none") +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") +
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+## 3.b 500-hPa Heights
+
+```{r}
+
+  Var     = "ISOHGT"
+  Varname = "500-hPa Isobaric Heights"
+  Hgt     = 500 * 100
+  Fx      = 24
+  
+```
+
+### 3.b.1 500-hPa Heights by Quarter
+
+```{r}
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Quarter)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Quarter) + 
+      
+      facet_wrap(facets = ~ Quarter) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            ) +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") +
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+      
+      scale_colour_manual(values=c("DJF" = "cyan",
+                                   "MAM" = "green",
+                                   "JJA" = "magenta",
+                                   "SON" = "orange"),
+                        guide =FALSE) +
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+
+### 3.b.2 500-hPa Heights by Month
+
+```{r}
+
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Month)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Month) + 
+      
+      facet_wrap(facets = ~ Month) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            legend.position = "none") +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") +
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+
+
+## 3.c Mean Sea Level Pressure
+
+```{r}
+
+  Var     = "MSLP"
+  Varname = "Mean Sea Level Pressure"
+  Hgt     = 0
+  Fx      = 24
+
+```
+
+
+### 3.c.1 Mean Sea Level Pressure by Quarter
+
+```{r}
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Quarter)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Quarter) + 
+      
+      facet_wrap(facets = ~ Quarter) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            ) +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") +
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+      
+      scale_colour_manual(values=c("DJF" = "cyan",
+                                   "MAM" = "green",
+                                   "JJA" = "magenta",
+                                   "SON" = "orange"),
+                        guide =FALSE) +
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+
+### 3.c.2 Mean Sea Level Pressure by Month
+
+```{r}
+
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Month)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Month) + 
+      
+      facet_wrap(facets = ~ Month) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            legend.position = "none") +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") +
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+
+
+## 3.d 10-m Wind Speeds
+
+```{r}
+
+  Var     = "M10"
+  Varname = "10-m Wind Speed"
+  Hgt     = 10
+  Fx      = 24
+  
+```
+
+
+### 3.d.1 10-m Wind Speed by Quarter
+
+```{r}
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Quarter)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Quarter) + 
+      
+      facet_wrap(facets = ~ Quarter) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            ) +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") +
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+      
+      scale_colour_manual(values=c("DJF" = "cyan",
+                                   "MAM" = "green",
+                                   "JJA" = "magenta",
+                                   "SON" = "orange"),
+                        guide =FALSE) +
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+
+### 3.d.2 10-m Wind Speed by Month
+
+```{r}
+
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Month)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Month) + 
+      
+      facet_wrap(facets = ~ Month) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            legend.position = "none") +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") +
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+## 3.e 10-m Wind Gusts
+
+```{r}
+
+  Var     = "GUST"
+  Varname = "10-m Wind Gusts"
+  Hgt     = 10
+  Fx      = 24
+
+```
+
+
+### 3.e.1 10-m Wind Gusts by Quarter
+
+```{r}
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Quarter)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Quarter) + 
+      
+      facet_wrap(facets = ~ Quarter) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA)) +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") + 
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+      
+      scale_colour_manual(values=c("DJF" = "cyan",
+                                   "MAM" = "green",
+                                   "JJA" = "magenta",
+                                   "SON" = "orange"),
+                        guide =FALSE) +
+    
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
+### 3.e.2 10-m Wind Gusts by Month
+
+```{r}
+
+  for (Fx in Fx_Hour[2:length(Fx_Hour)]) {
+    
+    fx_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                             (Height   == Hgt) &
+                                             (Fx_Hour  == Fx)  ) %>%
+                                      select(-Month)
+    
+    seasonal_subset = CI_Ensemble_Stats %>% filter((Variable == Var) &
+                                                   (Height   == Hgt) &
+                                                   (Fx_Hour  == Fx)  )
+    
+    myplot = ggplot(data = seasonal_subset) +
+      
+      aes(x       = Ens_StDev,
+          y       = RMSE_Ens000,
+          color   = Month) + 
+      
+      facet_wrap(facets = ~ Month) + 
+      
+      theme_bw() +
+      
+      theme(strip.background = element_rect(fill=NA),
+            legend.position  = "none") +
+      
+      labs(title    = str_c(Fx,
+                            "-hr Forecast, CI Seasonal Triangles for ",
+                            Varname,
+                            sep = ""),
+           subtitle = str_c(region_name,
+                            sep = "")) +
+        
+      xlab("Ensemble Standard Deviation") + 
+      
+      ylab("Root Mean Squared Error") + 
+      
+      geom_point(data    = fx_subset,
+                 color   = "grey",
+                 alpha   = 0.5) +
+      
+
+      geom_point(data    = seasonal_subset,
+                 alpha   = 0.7)
+
+      
+    print(myplot)
+    
+  }
+
+```
+
