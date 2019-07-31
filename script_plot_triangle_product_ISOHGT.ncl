@@ -638,6 +638,10 @@ delete(wks)
 system ("scp " + plot_file + ".000001.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_triangle_by_FxTime.png")
 system ("scp " + plot_file + ".000002.png  wjc@kyrill.ias.sdsmt.edu:/var/www/html/firemet/wrf_rap/current_ci_triangle_by_RealTime.png")
 
+system("ls -altr " + plot_file + ".000001.png  /var/www/html/firemet/wrf_rap/current_ci_triangle_by_FxTime.png")
+system("ls -altr " + plot_file + ".000002.png  /var/www/html/firemet/wrf_rap/current_ci_triangle_by_RealTime.png")
+
+
 
 
 end
