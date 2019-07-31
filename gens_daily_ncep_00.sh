@@ -11,9 +11,9 @@ which idl
 
 ulimit -f unlimited
 
-VARIABLE_LIST=( ISOHGT MSLP T2M SPCH2M U10 V10 M10 UFLX VFLX FRICV GUST APCP )
+declare -a VARIABLE_LIST=( "ISOHGT" "MSLP" "T2M" "SPCH2M" "U10" "V10" "M10" "UFLX" "VFLX" "FRICV" "GUST" "APCP" )
 
-LOCATION_LIST=(WRFRAP ARMCAR NAMIBI  UCONUS)
+declare -a LOCATION_LIST=( "WRFRAP" "ARMCAR" "NAMIBI" "UCONUS" )
 
 HH=00
 
@@ -34,19 +34,19 @@ endidl
 cd /projects/BIG_WEATHER/GENS_ERROR_RT
 
 
-for LOCATION in $LOCATION_LIST;
+for LOCATION in "${LOCATION_LIST[@]}";
 do
    echo "====================================================="
    echo "ØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØØ"
    echo
 
-   for VARIABLE in $VARIABLE_LIST;
+   for VARIABLE in "${VARIABLE_LIST[@]}";
    do
 
          echo "====================================================="
          echo
 
-         echo $LOCATION $VARIABLE  ${START_DATE}_${HH}
+         echo ${LOCATION} ${VARIABLE}  ${START_DATE}_${HH}
 
          echo
          echo "-----------------------------------------------------"
