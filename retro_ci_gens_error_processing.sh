@@ -32,7 +32,6 @@ declare -a VARIABLE_LIST=( ISOHGT
 
 declare -a LOCATION_LIST=( WRFRAP
                            ARMCAR
-                           NAMIBI
                            UCONUS )
 
 declare -a LOCATION_LIST=( WRFRAP )

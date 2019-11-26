@@ -13,7 +13,7 @@ ulimit -f unlimited
 
 declare -a VARIABLE_LIST=( "ISOHGT" "MSLP" "T2M" "SPCH2M" "U10" "V10" "M10" "UFLX" "VFLX" "FRICV" "GUST" "APCP" )
 
-declare -a LOCATION_LIST=( "WRFRAP" "ARMCAR" "NAMIBI" "UCONUS" )
+declare -a LOCATION_LIST=( "WRFRAP" "ARMCAR" "UCONUS" )
 
 HH=18
 
