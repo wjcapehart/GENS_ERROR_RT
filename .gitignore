@@ -12,3 +12,4 @@ old_files_not_sent_to_github
 .RData
 *.Rdata
 *.RData
+.Rhistory
