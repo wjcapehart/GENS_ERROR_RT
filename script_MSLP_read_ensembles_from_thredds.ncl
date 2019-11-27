@@ -188,6 +188,8 @@ begin
                   scenario      + \
                   "_ALL_2017-11-01_00.wrf_ci_turb.grib2"
 
+   print(metadata_URL)
+
    f = addfile(metadata_URL, "r")
 
 

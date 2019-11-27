@@ -164,6 +164,7 @@ begin
                   "_ALL_2017-11-01_00.wrf_ci_turb.grib2"
 
    f = addfile(metadata_URL, "r")
+   print(metadata_URL)
 
    lon = f->lon
    lon!0 =  "lon"

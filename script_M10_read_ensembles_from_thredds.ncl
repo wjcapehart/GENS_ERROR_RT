@@ -192,6 +192,7 @@ begin
 
    f = addfile(metadata_URL, "r")
 
+   print(metadata_URL)
 
    lon = f->$longitude_name$
    lon!0 =  "lon"
