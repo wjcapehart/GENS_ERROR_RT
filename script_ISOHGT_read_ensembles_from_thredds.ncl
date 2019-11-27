@@ -500,7 +500,7 @@ begin
             thredds_fx  = inarr&thredds_fx
             thredds_ens = inarr&thredds_ens
             isobaric_height_field( t, {thredds_fx}, {thredds_ens}, {isobaric_height}, :, :) = (/ inarr({thredds_fx},{thredds_ens},{isobaric_height},:,:) /)
-            if (dimsizes(thredds_fx).ne.dimsizes(fx)) thenisobaric_height
+            if (dimsizes(thredds_fx).ne.dimsizes(fx)) then
                print("      !!!!  Error in "+fx_time+" Fx size for "+variable_name)
             end if
             if (dimsizes(thredds_ens).ne.dimsizes(ens)) then
