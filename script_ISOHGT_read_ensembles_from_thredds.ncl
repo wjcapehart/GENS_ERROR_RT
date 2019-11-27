@@ -94,6 +94,30 @@ begin
                                97500.0,  \
                               100000.0   /) ; it's in Pascals
 
+
+  isobaric_height_pull := (/   10000.0,  \
+                              15000.0,  \
+                              20000.0,  \
+                              25000.0,  \
+                              30000.0,  \
+                              35000.0,  \
+                              40000.0,  \
+                              45000.0,  \
+                              50000.0,  \
+                              55000.0,  \
+                              60000.0,  \
+                              65000.0,  \
+                              70000.0,  \
+                              75000.0,  \
+                              80000.0,  \
+                              85000.0,  \
+                              90000.0,  \
+                              92500.0,  \
+                              95000.0,  \
+                              97500.0,  \
+                             100000.0   /) ; it's in Pascals
+
+
    isobaric_height_pull@units = "Pa"
 
    ;
@@ -189,7 +213,9 @@ begin
                   "gens003_"    + \
                   scenario      + \
                   "_ALL_2017-11-01_00.wrf_ci_turb.grib2"
-                  print(metadata_URL)
+
+
+  print(metadata_URL)
 
    f = addfile(metadata_URL, "r")
 
