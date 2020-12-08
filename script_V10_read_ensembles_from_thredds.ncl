@@ -67,12 +67,7 @@ begin
    ;
    ; requested isobaric height level
    ;
-   isobaric_height_pull = (/    1000.0,  \
-                                2000.0,  \
-                                3000.0,  \
-                                5000.0,  \
-                                7000.0,  \
-                               10000.0,  \
+   isobaric_height_pull = (/   10000.0,  \
                                15000.0,  \
                                20000.0,  \
                                25000.0,  \
