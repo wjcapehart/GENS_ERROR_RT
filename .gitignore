@@ -1,13 +1,26 @@
+# macOS Files
+.DS_Store
+
+# netcdf files
 GENS*.nc
+gens*.nc
+
+# graphics files
 *.pdf
 *.png
-gens*.nc
+
+# dead files
 ._*
-error_data
-error_pdfs
-triangle_archives
-ci_graphics
-old_files_not_sent_to_github
+
+# directories
+error_data/
+error_pdfs/
+triangle_archives/
+ci_graphics/
+old_files_not_sent_to_github/
+Seasonal_Analyses_with_Rdata_files/
+
+# R Files
 .Rdata
 .RData
 *.Rdata

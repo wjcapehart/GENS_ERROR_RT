@@ -1,9 +1,14 @@
 #!/bin/bash
 
 . /home/bash_profile_ias
-. /usr/local/exelis/idl85/bin/idl_setup.bash
 
-idl=/usr/local/exelis/idl85/bin/idl
+# IDL Settings
+
+. /usr/local/harris/envi/bin/envi_setup.bash
+. /usr/local/harris/envi/idl/bin/idl_setup.bash
+
+
+idl=/usr/local/harris/envi56/idl88/bin/idl
 ncl=/usr/local/bin/ncl
 
 which idl
