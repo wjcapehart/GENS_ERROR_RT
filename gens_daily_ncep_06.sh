@@ -58,14 +58,14 @@ do
          echo
 
          # command-line syntax should read (for example for a fast test case):
-         #  ncl 'file_label="T2M"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'  script_T2M_read_ensembles_from_thredds.ncl
+         #  ncl 'file_label="T2M"' 'scenario="WRFRAP"' 'working_hour="00"'  'start_date_string="2017-06-25"' 'end_date_string="2017-07-05"'  script_T2M_read_ensembles_from_thredds_gens004.ncl
 
          echo ncl file_label='"'${VARIABLE}'"' \
                   scenario='"'${LOCATION}'"' \
                   start_date_string='"'$START_DATE'"'   \
                   end_date_string='"'${END_DATE}'"'       \
                   working_hour='"'$HH'"'       \
-                  script_${VARIABLE}_read_ensembles_from_thredds.ncl
+                  script_${VARIABLE}_read_ensembles_from_thredds_gens004.ncl
 
          echo
          echo "- - - - - - - - - - - - - - - - - - - - - - - - - - -"
@@ -77,7 +77,7 @@ do
              start_date_string='"'$START_DATE'"'   \
              end_date_string='"'${END_DATE}'"'       \
              working_hour='"'$HH'"'       \
-             script_${VARIABLE}_read_ensembles_from_thredds.ncl
+             script_${VARIABLE}_read_ensembles_from_thredds_gens004.ncl
 
          echo
          echo "-----------------------------------------------------"

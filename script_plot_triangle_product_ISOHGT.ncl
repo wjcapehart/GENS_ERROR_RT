@@ -212,7 +212,7 @@ begin
 
    color_table_range =  toint(fspan(2, 23, nt_recent))
 
-   text_label = "WMO 003 Grid "+ scenario
+   text_label = "WMO 004 Grid "+ scenario
 
    n_plot = ( toint(desired_max_fx_time) - toint(recent_fx(1)) ) /  toint(recent_fx(1)) + 1
 
